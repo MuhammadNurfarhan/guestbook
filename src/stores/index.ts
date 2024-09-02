@@ -1,18 +1,23 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import axios from 'axios';
 
-export const useMainStore = defineStore('main', {
-  state: () => ({
-    data: null,
-  }),
-  actions: {
-    async fetchData() {
-      try {
-        const response = await axios.get('https://api.example.com/data');
-        this.data = response.data;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  },
+export const useMainStore = defineStore('main', () => {
+  // State
+  const data = ref(null);
+
+  // Actions
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.API_BASE_URL}/api/user`);
+      data.value = response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return {
+    data,
+    fetchData,
+  };
 });

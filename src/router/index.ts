@@ -1,10 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Layout from '../layouts/Layout.vue';
+import { useAuthStore } from '@/stores/authStore';
+
 
 const routes = [
   {
     path: '/',
     component: Layout,
+    redirect: '/dashboard',
+    meta: { requiresAuth: true },
     children: [
       { path: '', component: () => import('@/views/Dashboard.vue') },
       { path: 'dashboard', component: () => import('@/views/Dashboard.vue') },
@@ -14,11 +18,29 @@ const routes = [
       { path: 'setting', component: () => import('@/views/Setting.vue') },
     ],
   },
+  {
+    path: '/login',
+    component: () => import('@/components/Login.vue'),
+  },
+  {
+    path: '/register',
+    component: () => import('@/components/Register.vue'),
+  },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.API_BASE_UR),
   routes,
 });
+
+// Navigation guard for protected routes
+// router.beforeEach((to, from, next) => {
+//   const authStore = useAuthStore();
+//   if (to.meta.requiresAuth && !authStore.token) {
+//     next('/login');
+//   } else {
+//     next();
+//   }
+// });
 
 export default router;
