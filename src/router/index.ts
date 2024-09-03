@@ -1,6 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Layout from '../layouts/Layout.vue';
 import { useAuthStore } from '@/stores/authStore';
+import Layout from '../layouts/Layout.vue';
+import Dashboard from '@/views/Dashboard.vue';
+import Master from '@/views/Master.vue';
+import Transaksi from '@/views/Transaksi.vue';
+import Report from '@/views/Report.vue';
+import Setting from '@/views/Setting.vue';
+import Login from '@/components/Login.vue';
+import Register from '@/components/Register.vue';
 
 
 const routes = [
@@ -10,26 +17,66 @@ const routes = [
     redirect: '/dashboard',
     meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('@/views/Dashboard.vue') },
-      { path: 'dashboard', component: () => import('@/views/Dashboard.vue') },
-      { path: 'master', component: () => import('@/views/Master.vue') },
-      { path: 'transaksi', component: () => import('@/views/Transaksi.vue') },
-      { path: 'report', component: () => import('@/views/Report.vue') },
-      { path: 'setting', component: () => import('@/views/Setting.vue') },
+      {
+        path: '',
+        component: Dashboard
+      },
+      {
+        path: 'dashboard',
+        component: Dashboard
+      },
+      {
+        path: 'master',
+        component: Master,
+        // children: [
+        //   {
+        //     path: 'vendor',
+        //     component: () => import('@/views/MasterVendor.vue'),
+        //   },
+        //   {
+        //     path: 'car-type',
+        //     component: () => import('@/views/MasterCarType.vue'),
+        //   },
+        //   {
+        //     path: 'id-type',
+        //     component: () => import('@/views/MasterIdType.vue'),
+        //   },
+        //   {
+        //     path: 'destination-building',
+        //     component: () => import('@/views/MasterDestinationBuilding.vue'),
+        //   },
+        //   {
+        //     path: 'visitor-purpose',
+        //     component: () => import('@/views/MasterVisitorPurpose.vue'),
+        //   },
+        // ]
+      },
+      {
+        path: 'transaksi',
+        component: Transaksi
+      },
+      {
+        path: 'report',
+        component: Report
+      },
+      {
+        path: 'setting',
+        component: Setting
+      },
     ],
   },
   {
     path: '/login',
-    component: () => import('@/components/Login.vue'),
+    component: Login,
   },
   {
     path: '/register',
-    component: () => import('@/components/Register.vue'),
+    component: Register,
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.API_BASE_UR),
+  history: createWebHistory(import.meta.env.API_BASE_URL),
   routes,
 });
 
