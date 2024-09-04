@@ -3,7 +3,7 @@
     <v-row justify="center">
       <v-col cols="12" md="6">
         <v-card>
-          <v-card-title>
+          <v-card-title class="bg-primary mb-5">
             <span class="text-h5">Register</span>
           </v-card-title>
 

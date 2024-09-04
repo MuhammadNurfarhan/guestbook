@@ -28,19 +28,27 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${import.meta.env.API_BASE_URL}/login`, {
+      const response = await axios.post('https://172.17.10.222:433/api/user/login', {
         email,
         password,
       });
-      token.value = response.data.token;
-      user.value = email;
-      errorMessage.value = null;
 
-       // Save token to localStorage
+      token.value = response.data.token;
+      errorMessage.value = null;
+      user.value = email;
+
+      // Save token to localStorage
       localStorage.setItem('token', token.value ?? '');
-    } catch (error) {
-      errorMessage.value = 'Login failed';
-      console.error(error);
+      return true;
+    } catch (error: any) {
+      if (error.response && error.response.status === 401) {
+        errorMessage.value = 'Invalid email or password.';
+      } else if (error.response && error.response.status === 400) {
+        errorMessage.value = 'User not registered.';
+      } else {
+        errorMessage.value = 'An error occurred during login. Please try again.';
+      }
+      throw error;
     }
   };
 
@@ -59,10 +67,6 @@ const logout = () => {
   router.push('/login');
 };
 
-const isAuthenticated = () => {
-  return !!token.value;
-};
-
   return {
     user,
     token,
@@ -70,6 +74,5 @@ const isAuthenticated = () => {
     register,
     login,
     logout,
-    isAuthenticated,
   };
 });

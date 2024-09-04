@@ -34,24 +34,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useAuthStore } from '../stores/authStore';
 
 interface Item {
   title: string;
   to: string;
-  icon: string;
+  icon?: string;
+  children?: Item[];
 }
 
 const authStore = useAuthStore();
 
 const items = ref<Item[]>([
   { title: 'Dashboard', to: '/dashboard', icon: 'mdi-view-dashboard' },
-  { title: 'Master', to: '/master', icon: 'mdi-database-edit' },
+  { title: 'Master', to: '/master', icon: 'mdi-database-edit', },
   { title: 'Transaksi', to: '/transaksi', icon: 'mdi-cash' },
   { title: 'Report', to: '/report', icon: 'mdi-file-document' },
   { title: 'Setting', to: '/setting' , icon: 'mdi-cog'},
 ]);
+
 const logout = () => {
   authStore.logout();
 };

@@ -2,12 +2,17 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import Layout from '../layouts/Layout.vue';
 import Dashboard from '@/views/Dashboard.vue';
-import Master from '@/views/Master.vue';
+import Master from '@/views/master/Master.vue';
 import Transaksi from '@/views/Transaksi.vue';
 import Report from '@/views/Report.vue';
 import Setting from '@/views/Setting.vue';
 import Login from '@/components/Login.vue';
 import Register from '@/components/Register.vue';
+import MasterVendor from '@/views/master/MasterVendor.vue';
+import MasterVehicleType from '@/views/master/MasterVehicleType.vue';
+import MasterIdentityType from '@/views/master/MasterIdentityType.vue';
+import MasterDestinationBuilding from '@/views/master/MasterDestinationBuilding.vue';
+import MasterVisitorPurpose from '@/views/master/MasterVisitorPurpose.vue';
 
 
 const routes = [
@@ -28,28 +33,26 @@ const routes = [
       {
         path: 'master',
         component: Master,
-        // children: [
-        //   {
-        //     path: 'vendor',
-        //     component: () => import('@/views/MasterVendor.vue'),
-        //   },
-        //   {
-        //     path: 'car-type',
-        //     component: () => import('@/views/MasterCarType.vue'),
-        //   },
-        //   {
-        //     path: 'id-type',
-        //     component: () => import('@/views/MasterIdType.vue'),
-        //   },
-        //   {
-        //     path: 'destination-building',
-        //     component: () => import('@/views/MasterDestinationBuilding.vue'),
-        //   },
-        //   {
-        //     path: 'visitor-purpose',
-        //     component: () => import('@/views/MasterVisitorPurpose.vue'),
-        //   },
-        // ]
+      },
+      {
+        path: '/master/vendor',
+        component: MasterVendor,
+      },
+      {
+        path: '/master/vehicle-type',
+        component: MasterVehicleType,
+      },
+      {
+        path: '/master/identity-type',
+        component: MasterIdentityType,
+      },
+      {
+        path: '/master/destination-building',
+        component: MasterDestinationBuilding,
+      },
+      {
+        path: '/master/visitor-purpose',
+        component: MasterVisitorPurpose,
       },
       {
         path: 'transaksi',
@@ -89,5 +92,19 @@ const router = createRouter({
 //     next();
 //   }
 // });
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !localStorage.getItem('token'); // Check if JWT exists
+
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      next('/login'); // Redirect to login if not authenticated
+    } else {
+      next(); // Proceed to the route
+    }
+  } else {
+    next(); // Proceed if the route does not require authentication
+  }
+});
 
 export default router;

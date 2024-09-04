@@ -3,7 +3,7 @@
     <v-row justify="center">
       <v-col cols="12" md="6">
         <v-card>
-          <v-card-title>
+          <v-card-title class="bg-success mb-5">
             <span class="text-h5">Login</span>
           </v-card-title>
 
@@ -21,7 +21,7 @@
 
               <v-text-field
                 v-model="password"
-                :rules="[rules.required]"
+                :rules="[rules.required, rules.password]"
                 label="Password"
                 type="password"
                 variant="outlined"
@@ -35,6 +35,7 @@
                 Don't have an account? <span class="text-decoration-underline"><router-link to="/register">Register</router-link></span>
               </p>
 
+              <!-- Error Alert -->
               <v-alert v-if="errorMessage" type="error" dense>
                 {{ errorMessage }}
               </v-alert>
@@ -47,33 +48,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useAuthStore } from '../stores/authStore';
 import { useRouter } from 'vue-router';
 
 // State
-const valid = ref(false);
-const email = ref('');
-const password = ref('');
+const valid = ref<boolean>(false);
+const email = ref<string>(localStorage.getItem('email') || '');
+const password = ref<string>('');
 
 // Validation rules
 const rules = {
   required: (value: string) => !!value || 'Required.',
   email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
+  password: (value: string) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(value) || 'Password must be at least 8 characters, contain at least one uppercase letter, one lowercase letter, one number.';
+  },
 };
 
 // Store and Router
 const authStore = useAuthStore();
 const router = useRouter();
 
-// Computed
 const errorMessage = authStore.errorMessage;
 
 // Methods
 const submitLogin = async () => {
-  await authStore.login(email.value, password.value);
-  if (!errorMessage?.valueOf && authStore.isAuthenticated()) {
+  try {
+    await authStore.login(email.value, password.value);
     router.push('/dashboard');
+  } catch (error) {
+    console.error('Login error:', error);
   }
 };
+
+// Watcher to save input values to localStorage
+// watch(email, (newValue) => {
+//   localStorage.setItem('email', newValue);
+// });
+
 </script>
