@@ -7,7 +7,7 @@
       <v-card-text>
         <v-form v-model="valid">
           <v-text-field
-            v-model="identityType"
+            v-model="Identitas_name"
             :rules="[rules.required]"
             label="Identity Name"
             variant="outlined"
@@ -15,7 +15,7 @@
             required
           ></v-text-field>
           <v-textarea
-            v-model="identityDescription"
+            v-model="Identitas_desc"
             :rules="[rules.required]"
             label="Description"
             variant="outlined"
@@ -35,8 +35,8 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const valid = ref(false);
-const identityType = ref('');
-const identityDescription = ref('');
+const Identitas_name = ref('');
+const Identitas_desc = ref('');
 const router = useRouter();
 
 // Validation rules
@@ -47,14 +47,14 @@ const rules = {
 // Method to add ID type
 const addIdentityType = async () => {
   try {
-    await axios.post('http://localhost:3000/id-types', {
-      identityType: identityType.value,
-      identityDescription: identityDescription.value
+    await axios.post('http://172.17.10.222:433/api/identitas', {
+      Identitas_name: Identitas_name.value,
+      Identitas_desc: Identitas_desc.value
     });
 
     // Handle success, e.g., clear form, show success message, etc.
-    identityType.value = '';
-    identityDescription.value = '';
+    Identitas_name.value = '';
+    Identitas_desc.value = '';
     valid.value = false;
     alert('Identity type added successfully!');
   } catch (error) {

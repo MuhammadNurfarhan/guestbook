@@ -5,17 +5,18 @@
         <span class="text-h5">Add Master Vendor</span>
       </v-card-title>
       <v-card-text>
-        <v-form v-model="valid">
+        <v-form v-model="valid" ref="form">
           <v-text-field
-            v-model="vendorName"
+            v-model="Vendor_name"
             :rules="[rules.required]"
             label="Vendor Name"
             variant="outlined"
             class="mb-2"
+            ref="vendorNameField"
             required
           ></v-text-field>
           <v-textarea
-            v-model="vendorDescription"
+            v-model="Vendor_desc"
             :rules="[rules.required]"
             label="Description"
             variant="outlined"
@@ -30,14 +31,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-const router = useRouter();
 
 const valid = ref(false);
-const vendorName = ref('');
-const vendorDescription = ref('');
+const Vendor_name = ref('');
+const Vendor_desc = ref('');
+const router = useRouter();
+
+// Ref for the Vendor Name field
+const vendorNameField = ref(null);
 
 // Validation rules
 const rules = {
@@ -46,24 +50,39 @@ const rules = {
 
 // Method to add vendor
 const addVendor = async () => {
-  try {
-    await axios.post('http://localhost:3000/vendors', {
-      vendorName: vendorName.value,
-      vendorDescription: vendorDescription.value
-    });
 
-    // Handle success, e.g., clear form, show success message, etc.
-    vendorName.value = '';
-    vendorDescription.value = '';
-    valid.value = false;
-    alert('Vendor added successfully!');
-  } catch (error) {
-    console.error('Error adding vendor:', error);
+  if (valid.value) {
+
+    try {
+      const payload = {
+        Vendor_name: Vendor_name.value,
+        Vendor_desc: Vendor_desc.value
+      };
+      console.log('Payload sent to backend:', payload);
+
+      //send data to backend
+      await axios.post('http://172.17.10.222:433/api/vendor', payload);
+
+      // Handle success, e.g., clear form, show success message, etc.
+      Vendor_name.value = '';
+      Vendor_desc.value = '';
+      valid.value = false;
+      alert('Vendor added successfully!');
+
+      // Use nextTick to ensure DOM updates before focusing
+      await nextTick();
+      if (vendorNameField.value) {
+        (vendorNameField.value as HTMLInputElement).focus();
+      }
+    } catch (error) {
+      console.error('Error adding vendor:', error);
+    }
+  } else {
+    alert('Please fill in the required fields.');
   }
 };
 
 const backMaster = () => {
-  // Assuming 'useRouter' is imported from 'vue-router'
   router.push('/master');
 };
 

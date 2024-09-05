@@ -7,7 +7,7 @@
       <v-card-text>
         <v-form v-model="valid">
           <v-text-field
-            v-model="vehicleName"
+            v-model="Vehicle_name"
             :rules="[rules.required]"
             label="Vehicle Name"
             variant="outlined"
@@ -15,7 +15,7 @@
             required
           ></v-text-field>
           <v-textarea
-            v-model="vehicleDescription"
+            v-model="Vehicle_desc"
             :rules="[rules.required]"
             label="Description"
             variant="outlined"
@@ -35,8 +35,8 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const valid = ref(false);
-const vehicleName = ref('');
-const vehicleDescription = ref('');
+const Vehicle_name = ref('');
+const Vehicle_desc = ref('');
 const router = useRouter();
 
 // Validation rules
@@ -47,14 +47,14 @@ const rules = {
 // Method to add car type
 const addVehicleType = async () => {
   try {
-    await axios.post('http://localhost:3000/vehicle-types', {
-      vehicleType: vehicleName.value,
-      vehicleDescription: vehicleDescription.value
+    await axios.post('http://172.17.10.222:433/api/vehicle', {
+      Vehicle_name: Vehicle_name.value,
+      Vehicle_desc: Vehicle_desc.value
     });
 
     // Handle success, e.g., clear form, show success message, etc.
-    vehicleName.value = '';
-    vehicleDescription.value = '';
+    Vehicle_name.value = '';
+    Vehicle_desc.value = '';
     valid.value = false;
     alert('Vehicle type added successfully!');
   } catch (error) {

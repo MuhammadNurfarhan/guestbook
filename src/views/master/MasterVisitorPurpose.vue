@@ -7,7 +7,7 @@
       <v-card-text>
         <v-form v-model="valid">
           <v-text-field
-            v-model="visitorPurposeName"
+            v-model="Purpose_name"
             :rules="[rules.required]"
             label="Visitor Purpose"
             variant="outlined"
@@ -15,7 +15,7 @@
             required
           ></v-text-field>
           <v-textarea
-            v-model="visitorPurposeDescription"
+            v-model="Purpose_desc"
             :rules="[rules.required]"
             label="Description"
             variant="outlined"
@@ -35,8 +35,8 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const valid = ref(false);
-const visitorPurposeName = ref('');
-const visitorPurposeDescription = ref('');
+const Purpose_name = ref('');
+const Purpose_desc = ref('');
 const router = useRouter();
 
 // Validation rules
@@ -47,14 +47,14 @@ const rules = {
 // Method to add visitor purpose
 const addVisitorPurpose = async () => {
   try {
-    await axios.post('http://localhost:3000/visitor-purposes', {
-      visitorPurposeName: visitorPurposeName.value,
-      visitorPurposeDescription: visitorPurposeDescription.value
+    await axios.post('http://172.17.10.222:433/api/purpose', {
+      Purpose_name: Purpose_name.value,
+      Purpose_desc: Purpose_desc.value
     });
 
     // Handle success, e.g., clear form, show success message, etc.
-    visitorPurposeName.value = '';
-    visitorPurposeDescription.value = '';
+    Purpose_name.value = '';
+    Purpose_desc.value = '';
     valid.value = false;
     alert('Visitor purpose added successfully!');
   } catch (error) {

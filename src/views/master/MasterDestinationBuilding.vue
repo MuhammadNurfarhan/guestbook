@@ -7,7 +7,7 @@
       <v-card-text>
         <v-form v-model="valid">
           <v-text-field
-            v-model="destinateName"
+            v-model="Destinate_name"
             :rules="[rules.required]"
             label="Destination Building Name"
             variant="outlined"
@@ -15,7 +15,7 @@
             required
           ></v-text-field>
           <v-textarea
-            v-model="destinateDescription"
+            v-model="Destinate_desc"
             :rules="[rules.required]"
             label="Description"
             variant="outlined"
@@ -35,8 +35,8 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const valid = ref(false);
-const destinateName = ref('');
-const destinateDescription = ref('');
+const Destinate_name = ref('');
+const Destinate_desc = ref('');
 const router = useRouter();
 
 // Validation rules
@@ -47,14 +47,14 @@ const rules = {
 // Method to add destination building
 const addDestinationBuilding = async () => {
   try {
-    await axios.post('http://localhost:3000/destination-buildings', {
-      destinateName: destinateName.value,
-      destinateDescription: destinateDescription.value,
+    await axios.post('http://172.17.10.222:433/api/destinate', {
+      Destinate_name: Destinate_name.value,
+      Destinate_desc: Destinate_desc.value,
     });
 
     // Handle success, e.g., clear form, show success message, etc.
-    destinateName.value = '';
-    destinateDescription.value = '';
+    Destinate_name.value = '';
+    Destinate_desc.value = '';
     valid.value = false;
     alert('Destination building added successfully!');
   } catch (error) {

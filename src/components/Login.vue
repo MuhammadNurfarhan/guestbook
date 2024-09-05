@@ -8,7 +8,7 @@
           </v-card-title>
 
           <v-card-text>
-            <v-form ref="form" v-model="valid" lazy-validation>
+            <v-form ref="form" v-model="valid" lazy-validation @keyup.enter="submitLogin">
               <v-text-field
                 v-model="email"
                 :rules="[rules.required, rules.email]"
@@ -36,8 +36,8 @@
               </p>
 
               <!-- Error Alert -->
-              <v-alert v-if="errorMessage" type="error" dense>
-                {{ errorMessage }}
+              <v-alert v-if="error" type="error" variant="outlined" class="mt-2">
+                {{ error }}
               </v-alert>
             </v-form>
           </v-card-text>
@@ -56,6 +56,10 @@ import { useRouter } from 'vue-router';
 const valid = ref<boolean>(false);
 const email = ref<string>(localStorage.getItem('email') || '');
 const password = ref<string>('');
+const error = ref<string | null>(null);
+// Store and Router
+const authStore = useAuthStore();
+const router = useRouter();
 
 // Validation rules
 const rules = {
@@ -67,19 +71,17 @@ const rules = {
   },
 };
 
-// Store and Router
-const authStore = useAuthStore();
-const router = useRouter();
-
-const errorMessage = authStore.errorMessage;
-
 // Methods
-const submitLogin = async () => {
-  try {
-    await authStore.login(email.value, password.value);
+const submitLogin = async () =>  {
+  error.value = null;
+  const success = await authStore.login(email.value, password.value);
+
+  if (success) {
+    // Redirect to dashboard
     router.push('/dashboard');
-  } catch (error) {
-    console.error('Login error:', error);
+  } else {
+    // Handle error
+    error.value = authStore.error;
   }
 };
 

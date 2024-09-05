@@ -1,78 +1,78 @@
-import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
+import { defineStore } from 'pinia';
 import { useRouter } from 'vue-router';
 
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const user = ref<string | null>(null);
-  const token = ref<string | null>(null);
-  const errorMessage = ref<string | null>(null);
   const router = useRouter();
+  const user = ref<string | null>(null);
+  const token = ref<string | null>(localStorage.getItem('token'));
+  const error = ref<string | null>(null);
 
   // Actions
   const register = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${import.meta.env.API_BASE_URL}/register`, {
+      const response = await axios.post(`http://172.17.10.222:433/api/user/register`, {
         email,
         password,
       });
       token.value = response.data.token;
       user.value = response.data.user;
-      errorMessage.value = null;
-    } catch (error) {
-      errorMessage.value = 'Registration failed';
+    } catch (error: any) {
+      error.value = 'Registration failed';
       console.error(error);
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('https://172.17.10.222:433/api/user/login', {
+      const response = await axios.post('http://172.17.10.222:433/api/user/login', {
         email,
         password,
       });
 
+      // if login success
       token.value = response.data.token;
-      errorMessage.value = null;
       user.value = email;
 
       // Save token to localStorage
       localStorage.setItem('token', token.value ?? '');
       return true;
     } catch (error: any) {
-      if (error.response && error.response.status === 401) {
-        errorMessage.value = 'Invalid email or password.';
-      } else if (error.response && error.response.status === 400) {
-        errorMessage.value = 'User not registered.';
-      } else {
-        errorMessage.value = 'An error occurred during login. Please try again.';
+        if (error.response && error.response.error) {
+          error.value = 'Invalid email or password';
+        } else if (error.response && error.response.status === 404) {
+          error.value = 'User not found';
+        } else if (error.response && error.response.status === 500) {
+          error.value = 'Internal server error';
+        } else {
+          error.value = 'An error occurred while logging in. Please try again later.';
+        }
+        console.error(error);
+
+        return false;
       }
-      throw error;
-    }
+  }
+
+  const logout = () => {
+    token.value = null;
+    user.value = null;
+    error.value = null;
+
+    // Remove token from localStorage
+    localStorage.removeItem('token');
+
+    // Redirect to login page
+    router.push('/login');
   };
-
-
-
-// ...
-const logout = () => {
-  token.value = null;
-  user.value = null;
-  errorMessage.value = null;
-
-  // Remove token from localStorage
-  localStorage.removeItem('token');
-
-  // Redirect to login page
-  router.push('/login');
-};
 
   return {
     user,
     token,
-    errorMessage,
     register,
     login,
     logout,
+    error,
   };
 });
