@@ -60,8 +60,8 @@ const addVendor = async () => {
       };
       console.log('Payload sent to backend:', payload);
 
-      //send data to backend
-      await axios.post('http://172.17.10.222:433/api/vendor', payload);
+      // @ts-ignore
+      await axios.post(`http://172.17.10.222:4433/api/vendor`, payload);
 
       // Handle success, e.g., clear form, show success message, etc.
       Vendor_name.value = '';

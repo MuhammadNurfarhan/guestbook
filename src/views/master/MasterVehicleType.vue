@@ -47,7 +47,8 @@ const rules = {
 // Method to add car type
 const addVehicleType = async () => {
   try {
-    await axios.post('http://172.17.10.222:433/api/vehicle', {
+    // @ts-ignore
+    await axios.post(`http://172.17.10.222:4433/api/vehicle`, {
       Vehicle_name: Vehicle_name.value,
       Vehicle_desc: Vehicle_desc.value
     });

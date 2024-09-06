@@ -47,7 +47,8 @@ const rules = {
 // Method to add destination building
 const addDestinationBuilding = async () => {
   try {
-    await axios.post('http://172.17.10.222:433/api/destinate', {
+    // @ts-ignore
+    await axios.post(`http://172.17.10.222:4433/api/destinate`, {
       Destinate_name: Destinate_name.value,
       Destinate_desc: Destinate_desc.value,
     });

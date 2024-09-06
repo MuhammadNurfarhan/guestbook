@@ -47,7 +47,8 @@ const rules = {
 // Method to add visitor purpose
 const addVisitorPurpose = async () => {
   try {
-    await axios.post('http://172.17.10.222:433/api/purpose', {
+    // @ts-ignore
+    await axios.post(`http://172.17.10.222:4433/api/purpose`, {
       Purpose_name: Purpose_name.value,
       Purpose_desc: Purpose_desc.value
     });

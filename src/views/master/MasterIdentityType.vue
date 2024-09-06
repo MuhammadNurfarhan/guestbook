@@ -47,7 +47,8 @@ const rules = {
 // Method to add ID type
 const addIdentityType = async () => {
   try {
-    await axios.post('http://172.17.10.222:433/api/identitas', {
+    // @ts-ignore
+    await axios.post(`http://172.17.10.222:4433/api/identitas`, {
       Identitas_name: Identitas_name.value,
       Identitas_desc: Identitas_desc.value
     });
