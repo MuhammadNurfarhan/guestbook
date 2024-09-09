@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 import Layout from '../layouts/Layout.vue';
 import Dashboard from '@/views/Dashboard.vue';
 import Master from '@/views/master/Master.vue';
-import Transaksi from '@/views/Transaksi.vue';
+import Visit from '@/views/transaction/Visit.vue';
 import Report from '@/views/Report.vue';
 import Setting from '@/views/Setting.vue';
 import Login from '@/components/Login.vue';
@@ -55,8 +55,8 @@ const routes = [
         component: MasterVisitorPurpose,
       },
       {
-        path: 'transaksi',
-        component: Transaksi
+        path: 'visit',
+        component: Visit
       },
       {
         path: 'report',
@@ -79,7 +79,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.API_BASE_URL),
+  history: createWebHistory(),
   routes,
 });
 

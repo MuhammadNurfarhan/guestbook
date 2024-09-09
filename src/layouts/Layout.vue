@@ -56,7 +56,7 @@ const authStore = useAuthStore();
 const items = ref<Item[]>([
   { title: 'Dashboard', to: '/dashboard', icon: 'mdi-view-dashboard' },
   { title: 'Master', to: '/master', icon: 'mdi-database-edit', },
-  { title: 'Transaksi', to: '/transaksi', icon: 'mdi-cash' },
+  { title: 'Visit', to: '/visit', icon: 'mdi-cash' },
   { title: 'Report', to: '/report', icon: 'mdi-file-document' },
   { title: 'Setting', to: '/setting' , icon: 'mdi-cog'},
 ]);

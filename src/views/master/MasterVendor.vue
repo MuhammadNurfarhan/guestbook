@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <!-- Add Vendor Form -->
     <v-card>
       <v-card-title>
         <span class="text-h5">Add Master Vendor</span>
@@ -27,21 +28,65 @@
         </v-form>
       </v-card-text>
     </v-card>
+
+    <!-- Vendors Table -->
+    <v-card class="mt-5">
+      <v-card-title>
+        <span class="text-h5">Vendor List</span>
+      </v-card-title>
+<v-card-text>
+        <v-data-table
+          :headers="tableHeaders"
+          :items="vendors"
+          class="elevation-1"
+        >
+
+        <template v-slot:item="{ item }">
+            <tr>
+              <td>{{ item.vendor_name }}</td>
+              <td>{{ item.vendor_desc }}</td>
+              <td>
+                <v-btn icon @click="editVendor(item)">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn icon @click="deleteVendor(item.id)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from 'vue';
+import { nextTick, ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+
+interface Vendor {
+  id: number;
+  vendor_name: string;
+  vendor_desc: string;
+}
 
 const valid = ref(false);
 const Vendor_name = ref('');
 const Vendor_desc = ref('');
+const vendors = ref<Vendor[]>([]); // Holds the list of vendors
 const router = useRouter();
 
 // Ref for the Vendor Name field
 const vendorNameField = ref(null);
+
+// Table headers
+const tableHeaders = [
+  { title: 'Vendor Name', value: 'vendor_name' },
+  { title: 'Description', value: 'vendor_desc' },
+  { title: 'Actions', value: 'actions', sortable: false },
+];
 
 // Validation rules
 const rules = {
@@ -50,26 +95,27 @@ const rules = {
 
 // Method to add vendor
 const addVendor = async () => {
-
   if (valid.value) {
-
     try {
       const payload = {
-        Vendor_name: Vendor_name.value,
-        Vendor_desc: Vendor_desc.value
+        vendor_name: Vendor_name.value,
+        vendor_desc: Vendor_desc.value
       };
       console.log('Payload sent to backend:', payload);
 
-      // @ts-ignore
-      await axios.post(`http://172.17.10.222:4433/api/vendor`, payload);
+      // Send data to backend
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor`, payload);
 
-      // Handle success, e.g., clear form, show success message, etc.
+      // Fetch updated vendor list
+      await getVendors();
+
+      // Clear form
       Vendor_name.value = '';
       Vendor_desc.value = '';
       valid.value = false;
       alert('Vendor added successfully!');
 
-      // Use nextTick to ensure DOM updates before focusing
+      // Set focus back to vendor name field
       await nextTick();
       if (vendorNameField.value) {
         (vendorNameField.value as HTMLInputElement).focus();
@@ -82,8 +128,39 @@ const addVendor = async () => {
   }
 };
 
+// Method to fetch vendor data from backend
+const getVendors = async () => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vendor`);
+    vendors.value = response.data.data; // Assign data to vendors array
+  } catch (error) {
+    console.error('Error fetching vendors:', error);
+  }
+};
+
+// Call fetchVendors when the component is mounted
+onMounted(async () => {
+  await getVendors();
+});
+
+// Method to edit vendor
+const editVendor = (vendors: any) => {
+  console.log('Edit vendor:', vendors);
+  // Implement editing logic here
+};
+
+// Method to delete vendor
+const deleteVendor = async (id: number) => {
+  try {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/vendor/${id}`);
+    // Fetch updated vendor list after deletion
+    await getVendors();
+  } catch (error) {
+    console.error('Error deleting vendor:', error);
+  }
+};
+
 const backMaster = () => {
   router.push('/master');
 };
-
 </script>

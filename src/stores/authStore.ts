@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   const register = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${import.meta.env.API_BASE_URL}/api/user/register`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
         email,
         password,
       });
@@ -27,7 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`http://172.17.10.222:4433/api/user/login`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/login`, {
         email,
         password,
       });
