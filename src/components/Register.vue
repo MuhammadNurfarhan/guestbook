@@ -10,6 +10,14 @@
           <v-card-text>
             <v-form ref="form" v-model="valid" lazy-validation>
               <v-text-field
+                v-model="name"
+                :rules="[rules.required]"
+                label="Name"
+                variant="outlined"
+                class="mb-2"
+                required
+              ></v-text-field>
+              <v-text-field
                 v-model="email"
                 :rules="[rules.required, rules.email]"
                 label="Email"
@@ -34,10 +42,6 @@
               <p class="mt-2">
                 Already have an account? <span class="text-decoration-underline"><router-link to="/login">Login</router-link></span>
               </p>
-
-              <v-alert v-if="errorMessage" type="error" dense>
-                {{ errorMessage }}
-              </v-alert>
             </v-form>
           </v-card-text>
         </v-card>
@@ -53,8 +57,10 @@ import { useRouter } from 'vue-router';
 
 // State
 const valid = ref<boolean>(false);
+const name = ref<string>('');
 const email = ref<string>('');
 const password = ref<string>('');
+  const error = ref<string | null>(null);
 
 // Validation rules
 const rules = {
@@ -67,14 +73,15 @@ const rules = {
 const authStore = useAuthStore();
 const router = useRouter();
 
-// Computed
-const errorMessage = authStore.errorMessage;
 
 // Methods
 const submitRegister = async () => {
-  await authStore.register(email.value, password.value);
-  if (!errorMessage?.valueOf) {
+  error.value = null;
+  const response = await authStore.register(email.value, password.value ,name.value);
+  if (response !== undefined) {
     router.push('/login');
+  } else {
+    error.value = 'Failed to register. Please try again.';
   }
 };
 </script>

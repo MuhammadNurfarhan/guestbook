@@ -19,15 +19,15 @@ const routes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
     meta: { requiresAuth: true },
     children: [
       {
         path: '',
-        component: Dashboard
+        redirect: { name: 'Dashboard' },
       },
       {
         path: 'dashboard',
+        name: 'Dashboard',
         component: Dashboard
       },
       {
@@ -64,16 +64,19 @@ const routes = [
       },
       {
         path: 'setting',
-        component: Setting
+        name: 'Setting',
+        component: Setting,
       },
     ],
   },
   {
     path: '/login',
+    name: 'Login',
     component: Login,
   },
   {
     path: '/register',
+    name: 'Register',
     component: Register,
   },
 ];
@@ -84,27 +87,18 @@ const router = createRouter({
 });
 
 // Navigation guard for protected routes
-// router.beforeEach((to, from, next) => {
-//   const authStore = useAuthStore();
-//   if (to.meta.requiresAuth && !authStore.token) {
-//     next('/login');
-//   } else {
-//     next();
-//   }
-// });
-
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !localStorage.getItem('token'); // Check if JWT exists
-
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!isAuthenticated) {
-      next('/login'); // Redirect to login if not authenticated
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      next({ name: 'Login' });
     } else {
-      next(); // Proceed to the route
+      next();
     }
   } else {
-    next(); // Proceed if the route does not require authentication
+    next();
   }
 });
+
 
 export default router;

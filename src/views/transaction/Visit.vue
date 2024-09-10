@@ -21,18 +21,16 @@ import TableTransaction from './TableTransaction.vue';
 
 // State for visitor data
 const visitorData = ref([
-  // Example data (can be uncommented and used as initial state)
-  // {
-  //   checkIn: '2023/11/02 5:27',
-  //   checkOut: '2023/11/02 6:49',
-  //   visitorId: '2311020002',
-  //   visitorName: 'SADI',
-  //   carType: 'BOX',
-  //   driverName: 'AHMAD',
-  //   idType: 'E-KTP',
-  //   idNumber: '901125/0003',
-  // },
-  // More initial visitor data can go here
+  {
+    checkIn: '2023/11/02 5:27',
+    checkOut: '2023/11/02 6:49',
+    visitorId: '2311020002',
+    visitorName: 'SADI',
+    carType: 'BOX',
+    driverName: 'AHMAD',
+    idType: 'E-KTP',
+    idNumber: '901125/0003',
+  },
 ]);
 
 // Handle save action (adding new visitor data)

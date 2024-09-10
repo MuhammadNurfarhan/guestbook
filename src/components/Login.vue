@@ -34,11 +34,6 @@
               <p class="mt-2">
                 Don't have an account? <span class="text-decoration-underline"><router-link to="/register">Register</router-link></span>
               </p>
-
-              <!-- Error Alert -->
-              <v-alert v-if="error" type="error" variant="outlined" class="mt-2">
-                {{ error }}
-              </v-alert>
             </v-form>
           </v-card-text>
         </v-card>
@@ -76,12 +71,12 @@ const submitLogin = async () =>  {
   error.value = null;
   const success = await authStore.login(email.value, password.value);
 
-  if (success) {
+  if (success !== null) {
     // Redirect to dashboard
     router.push('/dashboard');
   } else {
     // Handle error
-    error.value = authStore.error;
+    error.value = 'Invalid email or password';
   }
 };
 

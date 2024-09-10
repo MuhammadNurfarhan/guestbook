@@ -6,7 +6,7 @@
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-toolbar-title>Guest Book</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn prepend-icon="mdi-account" variant="tonal" class="mr-2" rounded readonly>{{ authStore.user }}</v-btn>
+      <v-btn prepend-icon="mdi-account" variant="tonal" class="mr-2" rounded readonly>{{ authStore.role }}</v-btn>
       <v-btn prepend-icon="mdi-logout" variant="outlined" @click="logout">Logout</v-btn>
     </v-app-bar>
 
@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import {  ref } from 'vue';
 import { useAuthStore } from '../stores/authStore';
 
 interface Item {
@@ -50,7 +50,6 @@ interface Item {
 }
 
 const drawer = ref(false); // Controls the drawer visibility
-const mini = ref(false); // For mini-variant of the drawer
 const authStore = useAuthStore();
 
 const items = ref<Item[]>([

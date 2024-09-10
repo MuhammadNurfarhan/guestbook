@@ -97,7 +97,6 @@ const getUsers = async () => {
   loading.value = true;
   try {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user`);
-    console.log('User data:', response.data);
     users.value = response.data.data;
   } catch (error) {
     console.error('Error fetching user data:', error);

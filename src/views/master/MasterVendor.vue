@@ -46,10 +46,7 @@
               <td>{{ item.vendor_name }}</td>
               <td>{{ item.vendor_desc }}</td>
               <td>
-                <v-btn icon @click="editVendor(item)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon @click="deleteVendor(item.id)">
+                <v-btn icon @click="deleteVendor(item.vendor_id)">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </td>
@@ -67,7 +64,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 interface Vendor {
-  id: number;
+  vendor_id: string;
   vendor_name: string;
   vendor_desc: string;
 }
@@ -143,16 +140,16 @@ onMounted(async () => {
   await getVendors();
 });
 
-// Method to edit vendor
-const editVendor = (vendors: any) => {
-  console.log('Edit vendor:', vendors);
-  // Implement editing logic here
-};
-
 // Method to delete vendor
-const deleteVendor = async (id: number) => {
+const deleteVendor = async (id: string) => {
+  const token = localStorage.getItem('token');
+
   try {
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/vendor/${id}`);
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/vendor/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     // Fetch updated vendor list after deletion
     await getVendors();
   } catch (error) {

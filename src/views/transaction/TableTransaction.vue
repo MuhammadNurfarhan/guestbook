@@ -5,8 +5,8 @@
       class="elevation-1"
     >
       <template v-slot:item="{ item }">
-        <v-btn @click="emitEdit(item)">Edit</v-btn>
-        <v-btn @click="emitDelete(item)">Delete</v-btn>
+        <v-btn @click="emitEdit(item)" color="primary">Edit</v-btn>
+        <v-btn @click="emitDelete(item)" color="error">Delete</v-btn>
       </template>
     </v-data-table>
 </template>

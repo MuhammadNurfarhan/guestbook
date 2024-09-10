@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { defineStore } from 'pinia';
 import { useRouter } from 'vue-router';
@@ -6,73 +6,81 @@ import { useRouter } from 'vue-router';
 export const useAuthStore = defineStore('auth', () => {
   // State
   const router = useRouter();
-  const user = ref<string | null>(null);
+  const role = ref<string | null>(localStorage.getItem('role') || null);
   const token = ref<string | null>(localStorage.getItem('token'));
-  const error = ref<string | null>(null);
 
   // Actions
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, name: string) => {
+    if (!email || !password || !name) {
+      alert('Please fill in all fields');
+      return;
+    }
+
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user`, {
         email,
         password,
+        name,
       });
-      token.value = response.data.token;
-      user.value = response.data.user;
+      console.log(response.data);
+      alert('Registered successfully');
     } catch (error: any) {
-      error.value = 'Registration failed';
-      console.error(error);
+      console.error('Error registering:', error.response.data.message);
+      alert('Error registering: ' + error.response.data.message);
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
+
+      // Send login request
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/login`, {
         email,
         password,
       });
 
-      // if login success
-      token.value = response.data.token;
-      user.value = email;
+      const userData = response.data.data;
+      // Immediately set role and token in the reactive store
+      role.value = userData.role;  // This updates the reactive ref
+      token.value = userData.token;
 
-      // Save token to localStorage
-      localStorage.setItem('token', token.value ?? '');
-      return true;
-    } catch (error: any) {
-        if (error.response && error.response.error) {
-          error.value = 'Invalid email or password';
-        } else if (error.response && error.response.status === 404) {
-          error.value = 'User not found';
-        } else if (error.response && error.response.status === 500) {
-          error.value = 'Internal server error';
-        } else {
-          error.value = 'An error occurred while logging in. Please try again later.';
-        }
-        console.error(error);
-
-        return false;
-      }
-  }
+      // Store the user's name
+      localStorage.setItem('role', userData.role);  // Store the name in localStorage
+      localStorage.setItem('token', userData.token);
+      router.push({ name: 'Dashboard' });
+    } catch (error) {
+      console.error('Error login:', error);
+      alert('Error login');
+    }
+  };
 
   const logout = () => {
+    role.value = null;
     token.value = null;
-    user.value = null;
-    error.value = null;
 
-    // Remove token from localStorage
+    // Remove token/role from localStorage
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
 
     // Redirect to login page
     router.push('/login');
   };
 
+  // Automatically restore user on mount
+  onMounted(() => {
+    const storedUser = localStorage.getItem('role');
+    if (storedUser) {
+      return role.value = storedUser;
+    }
+    return role.value = null;
+
+  });
+
   return {
-    user,
+    role,
     token,
     register,
     login,
     logout,
-    error,
   };
 });
