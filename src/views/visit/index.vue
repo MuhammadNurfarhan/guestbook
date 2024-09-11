@@ -26,10 +26,13 @@ const visitorData = ref([
     checkOut: '2023/11/02 6:49',
     visitorId: '2311020002',
     visitorName: 'SADI',
-    carType: 'BOX',
+    vehicleType: 'BOX',
+    policeNumber: '123456789',
     driverName: 'AHMAD',
     idType: 'E-KTP',
     idNumber: '901125/0003',
+    destinationBuilding: 'PENANG',
+    vendorName: 'CITYLINK',
   },
 ]);
 

@@ -5,8 +5,23 @@
       class="elevation-1"
     >
       <template v-slot:item="{ item }">
-        <v-btn @click="emitEdit(item)" color="primary">Edit</v-btn>
-        <v-btn @click="emitDelete(item)" color="error">Delete</v-btn>
+        <tr>
+          <td>{{ item.checkIn }}</td>
+          <td>{{ item.checkOut }}</td>
+          <td>{{ item.visitorId }}</td>
+          <td>{{ item.visitorName }}</td>
+          <td>{{ item.vehicleType }}</td>
+          <td>{{ item.policeNumber }}</td>
+          <td>{{ item.driverName }}</td>
+          <td>{{ item.idType }}</td>
+          <td>{{ item.idNumber }}</td>
+          <td>{{ item.destinationBuilding }}</td>
+          <td>{{ item.vendorName }}</td>
+          <td>
+            <v-btn @click="emitEdit(item)" color="primary">Edit</v-btn>
+            <v-btn @click="emitDelete(item)" color="error">Delete</v-btn>
+          </td>
+        </tr>
       </template>
     </v-data-table>
 </template>

@@ -4,7 +4,7 @@
       <v-card-title class="text-h5">
         Master Data Management
       </v-card-title>
-      <v-card-text>
+      <v-card-text class="">
         <v-list>
           <v-list-item
             v-for="link in links"

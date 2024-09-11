@@ -1,53 +1,55 @@
 <template>
-  <v-container class="fill-height">
-    <v-row justify="center">
-      <v-col cols="12" md="6">
-        <v-card>
-          <v-card-title class="bg-primary mb-5">
-            <span class="text-h5">Register</span>
-          </v-card-title>
+  <div class="auth-page">
+    <v-container class="fill-height">
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-card class="auth-page-container">
+            <v-card-title class="bg-primary mb-5">
+              <span class="text-h5">Register</span>
+            </v-card-title>
 
-          <v-card-text>
-            <v-form ref="form" v-model="valid" lazy-validation>
-              <v-text-field
-                v-model="name"
-                :rules="[rules.required]"
-                label="Name"
-                variant="outlined"
-                class="mb-2"
-                required
-              ></v-text-field>
-              <v-text-field
-                v-model="email"
-                :rules="[rules.required, rules.email]"
-                label="Email"
-                type="email"
-                variant="outlined"
-                class="mb-2"
-                required
-              ></v-text-field>
+            <v-card-text>
+              <v-form ref="form" v-model="valid" lazy-validation>
+                <v-text-field
+                  v-model="name"
+                  :rules="[rules.required]"
+                  label="Name"
+                  variant="outlined"
+                  class="mb-2"
+                  required
+                ></v-text-field>
+                <v-text-field
+                  v-model="email"
+                  :rules="[rules.required, rules.email]"
+                  label="Email"
+                  type="email"
+                  variant="outlined"
+                  class="mb-2"
+                  required
+                ></v-text-field>
 
-              <v-text-field
-                v-model="password"
-                :rules="[rules.required, rules.min(8)]"
-                label="Password"
-                type="password"
-                variant="outlined"
-                required
-              ></v-text-field>
+                <v-text-field
+                  v-model="password"
+                  :rules="[rules.required, rules.min(8)]"
+                  label="Password"
+                  type="password"
+                  variant="outlined"
+                  required
+                ></v-text-field>
 
-              <v-btn :disabled="!valid" color="green" @click="submitRegister">
-                Register
-              </v-btn>
-              <p class="mt-2">
-                Already have an account? <span class="text-decoration-underline"><router-link to="/login">Login</router-link></span>
-              </p>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+                <v-btn :disabled="!valid" color="green" @click="submitRegister">
+                  Register
+                </v-btn>
+                <p class="mt-2">
+                  Already have an account? <span class="text-decoration-underline"><router-link to="/login">Login</router-link></span>
+                </p>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -85,3 +87,7 @@ const submitRegister = async () => {
   }
 };
 </script>
+
+<style lang="scss">
+@import './auth.scss';
+</style>
