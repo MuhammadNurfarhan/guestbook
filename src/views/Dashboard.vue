@@ -1,13 +1,22 @@
-// Dashboard.vue
 <template>
-  <v-container>
+  <v-container fluid>
+    <h1>Dashboard</h1>
     <v-row>
-      <v-col>
+      <v-col cols="12">
         <v-card>
-          <v-card-title class="bg-success mb-2">Total Visitors</v-card-title>
-          <v-card-text>
-            <VisitorChart />
-          </v-card-text>
+          <visitor-chart />
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row class="mt-5">
+      <v-col cols="12" md="6">
+        <v-card>
+          <vendor-chart />
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="6">
+        <v-card>
+          <vehicle-chart />
         </v-card>
       </v-col>
     </v-row>
@@ -16,12 +25,16 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import VisitorChart from '../components/VisitorChart.vue';
+import VendorChart from '@/components/VendorChart.vue';
+import VisitorChart from '@/components/VisitorChart.vue';
+import VehicleChart from '@/components/VehicleChart.vue';
 
 export default defineComponent({
   name: 'Dashboard',
   components: {
+    VendorChart,
     VisitorChart,
+    VehicleChart,
   },
 });
 </script>

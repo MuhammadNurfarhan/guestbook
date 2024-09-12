@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div ref="chartRef" style="width: 100%; height: 400px;"></div>
+    <div ref="chartRef" style="height: 400px;"></div>
   </div>
 </template>
 
@@ -10,44 +10,55 @@ import * as echarts from 'echarts';
 import axios from 'axios';
 
 export default defineComponent({
-  name: 'VisitorChart',
+  name: 'VehicleChart',
   setup() {
     const chartRef = ref(null);
     let chartInstance: echarts.ECharts | null = null;
 
-    // Fetch visitor data from API
-    const fetchVisitorData = async () => {
+    // Fetch vehicle data from API
+    const fetchVehicleData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/visit`); // API endpoint
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vehicle`);
         const data = response.data.data;
 
-        const dates = data.map((item: any) => item.checkin_date);
-        const totalVisitors = data.map((item: any) => item.visit_count);
+        const vehicleNames = data.map((item: any) => item.Vehicle_name);
+        const vehicleValues = data.map((item: any) => item.Vehicle_desc.length);
+        // const vehicleValues = new Array(vehicleNames.length).fill(2);
 
-        // Configure chart options for line chart
+        // Configure chart options for bar chart
         const chartOptions = {
           title: {
-            text: 'Total Visitors Over Time',
+            text: 'Vehicle Distribution',
             left: 'center',
           },
           tooltip: {
             trigger: 'axis',
+            axisPointer: {
+              type: 'shadow',
+            },
           },
           xAxis: {
             type: 'category',
-            data: dates,
+            data: vehicleNames,
+            axisLabel: {
+              rotate: 45,
+              margin: 10,
+            },
           },
           yAxis: {
             type: 'value',
+            min: 0,
+            axisLabel: {
+              formatter: '{value}',
+            },
           },
           series: [
             {
-              name: 'Total Visitors',
-              type: 'line',
-              data: totalVisitors,
-              smooth: true,
-              lineStyle: {
-                color: '#5470C6',
+              name: 'Count',
+              type: 'bar',
+              data: vehicleValues,
+              itemStyle: {
+                color: '#73C0DE',
               },
             },
           ],
@@ -57,14 +68,14 @@ export default defineComponent({
           chartInstance.setOption(chartOptions);
         }
       } catch (error) {
-        console.error('Failed to fetch visitor data:', error);
+        console.error('Failed to fetch vehicle data:', error);
       }
     };
 
     onMounted(() => {
       if (chartRef.value) {
         chartInstance = echarts.init(chartRef.value);
-        fetchVisitorData();
+        fetchVehicleData();
       }
 
       window.addEventListener('resize', () => {
