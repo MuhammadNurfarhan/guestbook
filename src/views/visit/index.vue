@@ -3,7 +3,7 @@
     <h1>Visitor</h1>
     <v-row>
       <v-col cols="4">
-        <v-text-field label="Visitor Name" v-model="formData.Visitor_name" variant="outlined" />
+        <v-text-field label="Visitor Name" v-model="formData.visitor_name" variant="outlined" />
         <v-select
           :items="vendorNames"
           label="Vendor Name"
@@ -34,21 +34,24 @@
           v-model="formData.destinate_id"
           variant="outlined"
         />
-        <v-text-field label="Destination PIC" v-model="formData.destinatePic" variant="outlined" />
+        <v-text-field label="Destination PIC" v-model="formData.destination_pic" variant="outlined" />
         <v-select
           :items="visitorPurposes"
           label="Visitor Purpose"
-          v-model="formData.visitorPurpose"
+          v-model="formData.Purpose_id"
           variant="outlined"
         />
-        <v-text-field label="Remark" v-model="formData.remarks" variant="outlined" />
+        <v-text-field label="Notes" v-model="formData.remarks" variant="outlined" />
       </v-col>
 
       <v-col cols="4">
-        <!-- QR Code Reader -->
-        <p style="color: red">{{ error }}</p>
-        <p>Last result: <b>{{ result }}</b></p>
-        <div style="border: 2px solid black">
+        <!-- Button to Open Camera for Checkout -->
+        <v-btn color="green" @click="openCameraForCheckout">Checkout with QR Code</v-btn>
+
+        <!-- QR Code Reader, visible only when `cameraOpen` is true -->
+        <div v-if="cameraOpen" style="border: 2px solid black; margin-top: 10px;">
+          <p style="color: red">{{ error }}</p>
+          <p>Last result: <b>{{ result }}</b></p>
           <qrcode-stream @detect="onDetect" @error="onError" />
         </div>
 
@@ -59,41 +62,63 @@
           <p v-if="error" style="color: red">{{ error }}</p>
           <img :src="qrCodeUrl" alt="Visitor QR Code" />
         </div>
-
-        <!-- Camera Integration -->
-        <v-btn color="green" class="mt-4" @click="openCamera">Take Photo</v-btn>
-        <img v-if="formData.img_url" :src="formData.img_url" alt="Visitor Photo" width="100" />
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row class="mb-5">
       <v-col cols="6">
-        <v-btn class="mr-4" color="primary" @click="saveVisitorData">Save & Print QR</v-btn>
-        <v-btn class="mr-4" color="error" @click="checkoutVisitorData">Checkout</v-btn>
+        <v-btn class="mr-4" color="primary" @click="saveVisitorData">Submit</v-btn>
         <v-btn variant="outlined" @click="refreshVisitorData">Refresh</v-btn>
       </v-col>
     </v-row>
 
-    <h2>Visitor Data</h2>
-    <v-data-table :headers="headers" :items="visitorData" class="elevation-1">
-      <template v-slot:item="{ item }">
-        <tr>
-          <td>{{ item.checkin_date }}</td>
-          <td>{{ item.checkout_date }}</td>
-          <td>{{ item.visit_no }}</td>
-          <td>{{ item.Visitor_name }}</td>
-          <td>{{ item.vehicle_id }}</td>
-          <td>{{ item.policeNumber }}</td>
-          <td>{{ item.driverName }}</td>
-          <td>{{ item.identitas_id }}</td>
-          <td>{{ item.identitas_no }}</td>
-          <td>{{ item.destinate_id }}</td>
-          <td>{{ item.vendor_id }}</td>
-          <td><img :src="item.img_url" alt="Visitor Photo" width="100" /></td>
-          <td>{{ item.status }}</td>
-        </tr>
-      </template>
-    </v-data-table>
+    <!-- Visitor Data -->
+    <v-card flat>
+      <v-card-title class="d-flex align-center pe-2">
+        <h2>Visitor Data</h2>
+        <v-spacer></v-spacer>
+        <v-text-field
+          label="Search"
+          density="compact"
+          v-model="search"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          single-line
+        ></v-text-field>
+      </v-card-title>
+
+      <v-divider></v-divider>
+
+      <v-data-table
+        :headers="headers"
+        :items="visitorData"
+        :search="search"
+        :loading="loading"
+        loading-text="Loading user data..."
+        class="elevation-1"
+      >
+        <template v-slot:item="{ item }">
+          <tr>
+            <td>{{ item.checkin_date }}</td>
+            <td>{{ item.checkout_date }}</td>
+            <td>{{ item.visit_no }}</td>
+            <td>{{ item.visitor_name }}</td>
+            <td>{{ item.vehicle_id }}</td>
+            <td>{{ item.policeNumber }}</td>
+            <td>{{ item.driverName }}</td>
+            <td>{{ item.identitas_id }}</td>
+            <td>{{ item.identitas_no }}</td>
+            <td>{{ item.destinate_id }}</td>
+            <td>{{ item.destination_pic }}</td>
+            <td>{{ item.vendor_id }}</td>
+            <td>{{ item.Purpose_id }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.remarks }}</td>
+          </tr>
+        </template>
+      </v-data-table>
+    </v-card>
   </v-container>
 </template>
 
@@ -105,7 +130,7 @@ import QRCode from 'qrcode';
 
 interface VisitorData {
   visit_no: string;
-  Visitor_name: string;
+  visitor_name: string;
   vendor_id: null;
   vehicle_id: null;
   policeNumber: string;
@@ -113,12 +138,11 @@ interface VisitorData {
   identitas_id: null;
   identitas_no: string;
   destinate_id: null;
-  destinatePic: string;
-  visitorPurpose: null;
+  destination_pic: string;
+  Purpose_id: null;
   remarks: string;
   checkin_date: string;
   checkout_date: string;
-  img_url: string;
   status: string;
 }
 
@@ -135,7 +159,7 @@ interface DetectedCode {
 // Data model for the form
 const formData = ref<VisitorData>({
   visit_no: '',
-  Visitor_name: '',
+  visitor_name: '',
   vendor_id: null,
   vehicle_id: null,
   policeNumber: '',
@@ -143,33 +167,36 @@ const formData = ref<VisitorData>({
   identitas_id: null,
   identitas_no: '',
   destinate_id: null,
-  destinatePic: '',
-  visitorPurpose: null,
+  destination_pic: '',
+  Purpose_id: null,
   remarks: '',
   checkin_date: '',
   checkout_date: '',
-  img_url: '',
   status: '',
 });
 
 // State for visitor data
 const visitorData = ref<VisitorData[]>([]);
+const search = ref('');
+const loading = ref(false);
 
 // Header configuration for the data table
 const headers = ref([
   { title: 'Check In', value: 'checkin_date' },
   { title: 'Check Out', value: 'checkout_date' },
   { title: 'Visitor No', value: 'visit_no' },
-  { title: 'Visitor Name', value: 'Visitor_name' },
+  { title: 'Visitor Name', value: 'visitor_name' },
   { title: 'Vehicle Type', value: 'vehicle_id' },
   { title: 'Police Number', value: 'policeNumber' },
   { title: 'Driver Name', value: 'driverName' },
   { title: 'ID Type', value: 'identitas_id' },
   { title: 'ID Number', value: 'identitas_no' },
   { title: 'Destination Building', value: 'destinate_id' },
-  { title: 'Vendor Name', value: 'vendor_id ' },
-  { title: 'Image', value: 'img_url' },
+  { title: 'Destination PIC', value: 'destination_pic' },
+  { title: 'Vendor Name', value: 'vendor_id' },
+  { title: 'Visitor Purpose', value: 'Purpose_id' },
   { title: 'Status', value: 'status' },
+  { title: 'Note', value: 'remarks' },
 ]);
 
 // data for select inputs
@@ -182,7 +209,13 @@ const visitorPurposes = ref([]);
 // QR code related state
 const result = ref('');
 const error = ref('');
-const qrCodeUrl = ref<string>('');
+const qrCodeUrl = ref<string | null>('');
+const cameraOpen = ref(false);
+
+// Function to open the camera for check-out
+const openCameraForCheckout = () => {
+  cameraOpen.value = true;
+};
 
 // Function to handle QR code detection for check-out
 const onDetect = (detectedCodes: DetectedCode[]) => {
@@ -201,12 +234,14 @@ function onError(err: Error) {
 
 // Function to fetch visitor data list from API
 const getVisitorData = async () => {
+  loading.value = true; // Show loading spinner
   try {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/visit`);
-    const data = response.data.data;
-    visitorData.value = data;
+    visitorData.value = response.data.data;
   } catch (error) {
     console.error('Error fetching visitor data:', error);
+  } finally {
+    loading.value = false; // Hide loading spinner
   }
 };
 
@@ -259,25 +294,19 @@ const printQRCode = () => {
         <body>
           <h1>Visitor QR Code</h1>
           <img src="${qrCodeUrl.value}" alt="QR Code" />
-          <script>
-            window.onload = function() {
-              window.print();
-              window.onafterprint = function() {
-                window.close();
-              };
-            };
-          <\/script>
         </body>
       </html>
     `);
     printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   }
 };
 
 // Function to update visitor data
 const checkoutVisitorData = async (visitNo: string) => {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) {
       console.error('Authentication token not found');
       return;
@@ -292,17 +321,16 @@ const checkoutVisitorData = async (visitNo: string) => {
 
     const visitor = response.data.data as VisitorData;
 
-    if (visitor.status === 'in') {
+    if (visitor) {
       // Update the visitor's status to "out" and set the checkout date
       visitor.status = 'out';
       visitor.checkout_date = new Date().toLocaleString();
-      visitor.status = 'out'; // Mark visitor as checked out
+      cameraOpen.value = false;
 
       // Update the visitor data in the backend
       await axios.put(`${import.meta.env.VITE_API_URL}/api/visit/${visitNo}`, visitor, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         }
       });
 
@@ -375,62 +403,6 @@ const getVisitorPurposes = async () => {
     console.error('Error fetching visitor purposes:', error);
   }
 };
-
-const openCamera = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    const videoElement = document.createElement('video');
-    videoElement.srcObject = stream;
-    videoElement.play();
-
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    // Create a dialog to display the video stream
-    const dialog = document.createElement('div');
-    dialog.appendChild(videoElement);
-    document.body.appendChild(dialog);
-
-    // Capture the image after user interaction
-    videoElement.addEventListener('click', () => {
-      canvas.width = videoElement.videoWidth;
-      canvas.height = videoElement.videoHeight;
-      context?.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-      const imageData = canvas.toDataURL('image/png');
-      savePhoto(imageData);
-      stream.getTracks().forEach(track => track.stop());
-      document.body.removeChild(dialog);
-    });
-  } catch (error) {
-    console.error('Error accessing camera:', error);
-  }
-};
-
-const savePhoto = async (imageData: string) => {
-  try {
-    // Convert base64 data to a Blob
-    const blob = await (await fetch(imageData)).blob();
-    const formData = new FormData();
-    formData.append('photo', blob);
-
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload-photo`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    // Save the returned img_url from the response to formData
-    const photoData = {
-      img_url: response.data.img_url,
-    }
-    console.log('Photo uploaded successfully:', photoData.img_url);
-  } catch (error) {
-    console.error('Error uploading photo:', error);
-  }
-};
-
-
 
 // Ambil data visitor ketika komponen dimuat
 onMounted(async () => {
