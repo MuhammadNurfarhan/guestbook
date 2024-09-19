@@ -18,10 +18,10 @@
         >
           <template v-slot:item="{ item }">
             <tr>
-              <td>{{ item.Destinate_name }}</td>
-              <td>{{ item.Destinate_desc }}</td>
+              <td>{{ item.destinate_name }}</td>
+              <td>{{ item.destinate_desc }}</td>
               <td>
-                <v-btn icon @click="deleteDestinationBuilding(item.Destinate_id)">
+                <v-btn icon @click="deleteDestinationBuilding(item.destinate_id)">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </td>
