@@ -26,7 +26,7 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="cancel">Cancel</v-btn>
+        <v-btn @click="cancel">Cancel</v-btn>
         <v-btn :disabled="!valid" color="primary" @click="save">Save</v-btn>
       </v-card-actions>
     </v-card>

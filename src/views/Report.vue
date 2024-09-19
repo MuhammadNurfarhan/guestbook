@@ -22,13 +22,12 @@
                 offset-y
                 min-width="auto"
               >
-                <template v-slot:activator="{ attrs }">
+                <template v-slot:activator="{ props }">
                   <v-text-field
                     v-model="selectedDate"
                     label="Select Date"
                     prepend-icon="mdi-calendar"
                     readonly
-                    v-bind="attrs"
                   ></v-text-field>
                 </template>
                 <v-date-picker
@@ -63,7 +62,7 @@ const reportData = ref<any[]>([]);
 const tableHeaders = [
   { text: 'Visitor ID', value: 'visitor_id' },
   { text: 'Visitor Name', value: 'visitor_name' },
-  { text: 'Date', value: 'date' },
+  { text: 'Date', value: 'created_date' },
   { text: 'Check-In Time', value: 'check_in' },
   { text: 'Check-Out Time', value: 'check_out' },
 ];
@@ -73,10 +72,10 @@ const menu = ref(false);
 const fetchReportData = async () => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/visitor-report`, {
+      `${import.meta.env.VITE_API_URL}/api/visit`, {
         params: {
           period: selectedPeriod.value,
-          date: selectedDate.value,
+          created_date: selectedDate.value,
         }
       }
     );

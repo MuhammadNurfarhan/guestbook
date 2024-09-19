@@ -211,6 +211,7 @@ const result = ref('');
 const error = ref('');
 const qrCodeUrl = ref<string | null>('');
 const cameraOpen = ref(false);
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Function to open the camera for check-out
 const openCameraForCheckout = () => {
@@ -219,8 +220,13 @@ const openCameraForCheckout = () => {
 
 // Function to handle QR code detection for check-out
 const onDetect = (detectedCodes: DetectedCode[]) => {
+  if (debounceTimer) return;
+
+  debounceTimer = setTimeout(() => {
+    debounceTimer = null;
+  }, 1000);
+
   result.value = detectedCodes[0].rawValue; // Assume the first detected code is the visit number
-  console.log('Scanned QR Code:', result.value);
 
   if (result.value) {
     checkoutVisitorData(result.value); // Proceed with the checkout process
@@ -245,6 +251,14 @@ const getVisitorData = async () => {
   }
 };
 
+const handleApiError = (error: any) => {
+  if (error.response && error.response.data && error.response.data.message) {
+    alert(`Api Error: ${error.response.data.message}`);
+  } else {
+    alert('An error occurred. Please try again.');
+  }
+};
+
 // Function to save visitor data
 const saveVisitorData = async () => {
   try {
@@ -261,45 +275,10 @@ const saveVisitorData = async () => {
 
     // Push the visitor data to the visitorData array
     visitorData.value.push({ ...formData.value });
-    console.log('Visitor data saved:', formData.value);
 
     await generateQRCode(formData.value.visit_no);
   } catch (error) {
-    console.error('Error saving visitor data:', error);
-  }
-};
-
-// Function to generate QR code
-const generateQRCode = async (visitNo: string) => {
-  try {
-    // Generate the QR code with visit number
-    const qrCodeDataUrl = await QRCode.toDataURL(visitNo);
-    qrCodeUrl.value = qrCodeDataUrl;  // Set the QR code URL to the ref
-
-    // Automatically print the QR code after generation
-    printQRCode();
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-  }
-};
-
-// Function to print the QR code
-const printQRCode = () => {
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    // Write the QR code into a new document
-    printWindow.document.write(`
-      <html>
-        <head><title>Print QR Code</title></head>
-        <body>
-          <h1>Visitor QR Code</h1>
-          <img src="${qrCodeUrl.value}" alt="QR Code" />
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    handleApiError(error);
   }
 };
 
@@ -339,10 +318,12 @@ const checkoutVisitorData = async (visitNo: string) => {
       console.warn('Visitor is already checked out.');
     }
   } catch (error) {
-    console.error('Error during checkout:', error);
+    handleApiError(error);
+  } finally {
+    cameraOpen.value = false; // Close the camera when done
+    refreshVisitorData();
   }
 };
-
 
 // Function to refresh visitor data
 const refreshVisitorData = async () => {
@@ -352,6 +333,33 @@ const refreshVisitorData = async () => {
   } catch (error) {
     console.error('Error fetching visitor data:', error);
   }
+};
+
+// Function to generate QR code
+const generateQRCode = async (visitNo: string) => {
+  try {
+    // Generate the QR code with visit number
+    const qrCodeDataUrl = await QRCode.toDataURL(visitNo);
+    qrCodeUrl.value = qrCodeDataUrl;  // Set the QR code URL to the ref
+
+    // Automatically print the QR code after generation
+    printQRCode();
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+  }
+};
+
+// Function to print the QR code
+const printQRCode = () => {
+  const printContent = `
+    <h1>Visitor QR Code</h1>
+    <img src="${qrCodeUrl.value}" alt="QR Code" />
+  `;
+  const originalContent = document.body.innerHTML;
+
+  document.body.innerHTML = printContent;
+  window.print();
+  document.body.innerHTML = originalContent;
 };
 
 const getVendorData = async () => {
