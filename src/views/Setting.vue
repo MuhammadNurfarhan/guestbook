@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <v-card>
       <v-card-title class="text-h4">User Management</v-card-title>
       <v-card-text>
         <v-data-table
@@ -8,14 +9,26 @@
           :loading="loading"
           item-value="id"
           class="elevation-1"
-          items-per-page="10"
+          :items-per-page-options="[5, 10, 20, 50]"
+          :items-per-page="itemsPerPage"
           loading-text="Loading user data..."
         >
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>User List</v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-btn variant="outlined" @click="refreshData" append-icon="mdi-refresh">Refresh Data</v-btn>
+              <v-text-field
+                v-model="search"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                density="compact"
+                label="Search"
+                class="mr-4"
+                single-line
+                hide-details
+              ></v-text-field>
+              <v-btn @click="openAddDialog" class="mr-2 bg-primary">Add User</v-btn>
+              <v-btn variant="outlined" @click="refreshData" :loading="loading" append-icon="mdi-refresh">Refresh</v-btn>
             </v-toolbar>
           </template>
 
@@ -26,73 +39,127 @@
               <td>{{ item.role }}</td>
               <td>
                 <v-btn small color="primary" @click="openEditDialog(item)" class="mr-2">Edit</v-btn>
+                <v-btn small color="error" @click="confirmDelete(item)">Delete</v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-card-text>
+    </v-card>
 
-      <!-- Edit User Dialog -->
-    <v-dialog v-model="editDialog" max-width="500px">
+    <!-- Add/Edit User Dialog -->
+    <v-dialog v-model="dialog" max-width="500px">
       <v-card>
-        <v-card-title>Edit User</v-card-title>
+        <v-card-title>{{ formTitle }}</v-card-title>
         <v-card-text>
-          <v-form ref="editForm">
-            <v-text-field v-model="editedUser.name" label="Name" required></v-text-field>
-            <v-text-field v-model="editedUser.email" label="Email" required></v-text-field>
+          <v-form ref="form" v-model="valid" @submit.prevent="saveUser">
+            <v-text-field
+              v-model="editedUser.name"
+              label="Name"
+              :rules="[v => !!v || 'Name is required']"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="editedUser.email"
+              label="Email"
+              :rules="[
+                v => !!v || 'Email is required',
+                v => /.+@.+\..+/.test(v) || 'Email must be valid'
+              ]"
+              required
+            ></v-text-field>
             <v-select
               v-model="editedUser.role"
               :items="roles"
               label="Role"
+              :rules="[v => !!v || 'Role is required']"
               required
             ></v-select>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="saveUser">Save</v-btn>
-          <v-btn color="grey" @click="closeEditDialog">Cancel</v-btn>
+          <v-btn class="bg-primary" @click="saveUser" :disabled="!valid || saving">Save</v-btn>
+          <v-btn class="bg-error" @click="closeDialog">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="400px">
+      <v-card>
+        <v-card-title>Confirm Delete</v-card-title>
+        <v-card-text>Are you sure you want to delete this user?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="error" @click="deleteUser" :loading="deleting">Delete</v-btn>
+          <v-btn color="grey" @click="deleteDialog = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar for notifications -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 
 interface User {
+  id: number;
   name: string;
   email: string;
   role: string;
 }
 
-// Define headers for the table
 const headers = [
-  { title: 'Name', value: 'name' },
-  { title: 'Email', value: 'email' },
-  { title: 'Role', value: 'role' },
-  { title: 'Actions', value: 'actions', sortable: false }
+  { title: 'Name', key: 'name' },
+  { title: 'Email', key: 'email' },
+  { title: 'Role', key: 'role' },
+  { title: 'Actions', key: 'actions', sortable: false }
 ];
 
-// Reactive states for users and loading indicator
 const users = ref<User[]>([]);
 const loading = ref(false);
+const dialog = ref(false);
+const deleteDialog = ref(false);
+const valid = ref(false);
+const saving = ref(false);
+const deleting = ref(false);
+const search = ref('');
+const itemsPerPage = ref(10);
 
-// State for Edit User Dialog
-const editDialog = ref(false);
-const editedUser = ref({
-  id: null,
+const editedUser = ref<User>({
+  id: 0,
   name: '',
   email: '',
   role: ''
 });
 
-// Roles for the role selection
 const roles = ['Super Admin', 'Admin', 'User'];
 
-// Fetch user data from the backend API
+const form = ref(null);
+
+const snackbar = ref({
+  show: false,
+  text: '',
+  color: 'success'
+});
+
+const formTitle = computed(() => editedUser.value.id ? 'Edit User' : 'Add User');
+
+const filteredUsers = computed(() => {
+  return users.value.filter(user =>
+    user.name.toLowerCase().includes(search.value.toLowerCase()) ||
+    user.email.toLowerCase().includes(search.value.toLowerCase()) ||
+    user.role.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
+
 const getUsers = async () => {
   loading.value = true;
   try {
@@ -100,43 +167,89 @@ const getUsers = async () => {
     users.value = response.data.data;
   } catch (error) {
     console.error('Error fetching user data:', error);
+    showSnackbar('Failed to fetch user data', 'error');
   } finally {
     loading.value = false;
   }
 };
 
-// Call the fetchUsers function when the component is mounted
 onMounted(getUsers);
 
-// Refresh user data when clicking the refresh button
 const refreshData = () => {
   getUsers();
 };
 
-// Open edit dialog
-const openEditDialog = (user: any) => {
-  editedUser.value = { ...user }; // Clone the selected user data into editedUser
-  editDialog.value = true; // Open the dialog
+const openAddDialog = () => {
+  editedUser.value = { id: 0, name: '', email: '', role: '' };
+  dialog.value = true;
 };
 
-// Close edit dialog
-const closeEditDialog = () => {
-  editDialog.value = false;
+const openEditDialog = (user: User) => {
+  editedUser.value = { ...user };
+  dialog.value = true;
 };
 
-// Save edited user
+const closeDialog = () => {
+  dialog.value = false;
+  editedUser.value = { id: 0, name: '', email: '', role: '' };
+  (form.value as any)?.reset();
+};
+
 const saveUser = async () => {
+  if (!(form.value as any).validate()) return;
+
+  saving.value = true;
   try {
-    const updatedUser = editedUser.value;
-    await axios.put(`${import.meta.env.VITE_API_URL}/api/user/${updatedUser.id}`, updatedUser);
-    getUsers(); // Refresh the data after successful update
-    closeEditDialog(); // Close the dialog
+    const isNew = !editedUser.value.id;
+    const response = isNew
+      ? await axios.post(`${import.meta.env.VITE_API_URL}/api/user`, editedUser.value)
+      : await axios.put(`${import.meta.env.VITE_API_URL}/api/user/${editedUser.value.id}`, editedUser.value);
+
+    if (isNew) {
+      users.value.push(response.data);
+    } else {
+      const index = users.value.findIndex(user => user.id === editedUser.value.id);
+      if (index !== -1) users.value[index] = response.data;
+    }
+
+    showSnackbar(`User ${isNew ? 'added' : 'updated'} successfully`, 'success');
+    closeDialog();
   } catch (error) {
     console.error('Error saving user data:', error);
+    showSnackbar(`Failed to ${editedUser.value.id ? 'update' : 'add'} user`, 'error');
+  } finally {
+    saving.value = false;
   }
 };
 
+const confirmDelete = (user: User) => {
+  editedUser.value = { ...user };
+  deleteDialog.value = true;
+};
 
+const deleteUser = async () => {
+  deleting.value = true;
+  try {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/${editedUser.value.id}`);
+    const index = users.value.findIndex(user => user.id === editedUser.value.id);
+    if (index !== -1) users.value.splice(index, 1);
+    showSnackbar('User deleted successfully', 'success');
+    deleteDialog.value = false;
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    showSnackbar('Failed to delete user', 'error');
+  } finally {
+    deleting.value = false;
+  }
+};
+
+const showSnackbar = (text: string, color: string) => {
+  snackbar.value = { show: true, text, color };
+};
+
+watch(search, () => {
+  users.value = filteredUsers.value;
+});
 </script>
 
 <style scoped>

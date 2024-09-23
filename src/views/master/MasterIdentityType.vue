@@ -1,47 +1,77 @@
 <template>
   <v-container>
-    <div class="mt-5">
-      <v-btn variant="outlined" @click="backMaster">
-        <v-icon icon="mdi-arrow-left"></v-icon>Back
-      </v-btn>
-      <v-card-title>
-        <span class="text-h5">Identity Type List</span>
-        <div class="float-right">
-          <v-btn color="primary" @click="showDialog = true">Create</v-btn>
-        </div>
-      </v-card-title>
-      <v-card-text>
-        <v-data-table
-          :headers="tableHeaders"
-          :items="identities"
-          class="elevation-1"
-        >
-          <template v-slot:item="{ item }">
-            <tr>
-              <td>{{ item.identitas_name }}</td>
-              <td>{{ item.identitas_desc }}</td>
-              <td>
-                <v-btn icon @click="deleteIdentityType(item.identitas_id)">
+    <v-row>
+      <v-col cols="12">
+        <v-btn variant="outlined" @click="backMaster" prepend-icon="mdi-arrow-left">
+          Back
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex justify-space-between align-center">
+            <span class="text-h5">Identity Type List</span>
+            <v-btn color="primary" @click="openCreateDialog" prepend-icon="mdi-plus">
+              Create
+            </v-btn>
+          </v-card-title>
+
+          <v-card-text>
+            <v-data-table
+              :headers="tableHeaders"
+              :items="identities"
+              :loading="loading"
+              class="elevation-1"
+            >
+              <template v-slot:item.actions="{ item }">
+                <v-btn icon @click="editIdentityType(item)" color="primary">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn icon @click="confirmDelete(item)" color="error">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-card-text>
-    </div>
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-    <!-- Dialog for adding a new identity type -->
     <AddIdentityDialog
       v-model:show="showDialog"
-      @save="addIdentityType"
+      :editMode="editMode"
+      :editedItem="editedItem"
+      @save="saveIdentityType"
       @cancel="handleCancel"
     />
+
+    <!-- Confirmation dialog for delete action -->
+    <v-dialog v-model="deleteDialog" max-width="500px">
+      <v-card>
+        <v-card-title>Confirm Deletion</v-card-title>
+        <v-card-text>Are you sure you want to delete this identity type?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="error" variant="text" @click="deleteIdentityType">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar for feedback -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+      {{ snackbar.text }}
+      <template v-slot:actions>
+        <v-btn color="white" text @click="snackbar.show = false">Close</v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import AddIdentityDialog from './components/AddIdentityDialog.vue';
@@ -52,62 +82,121 @@ interface Identity {
   identitas_desc: string;
 }
 
+// State variables
 const showDialog = ref(false);
+const deleteDialog = ref(false);
+const loading = ref(false);
 const identities = ref<Identity[]>([]);
 const router = useRouter();
+const editMode = ref(false);
+const editedItem = ref<Identity | null>(null);
+const itemToDelete = ref<Identity | null>(null);
 
-// Table headers
+// Snackbar state
+const snackbar = reactive({
+  show: false,
+  text: '',
+  color: '',
+});
+
+// Table headers configuration
 const tableHeaders = [
-  { title: 'Identity Name', value: 'identitas_name' },
-  { title: 'Description', value: 'identitas_desc' },
-  { title: 'Actions', value: 'actions', sortable: false },
+  { title: 'Identity Name', key: 'identitas_name' },
+  { title: 'Description', key: 'identitas_desc' },
+  { title: 'Actions', key: 'actions', sortable: false },
 ];
 
 // Fetch identity types from API
 const getIdentityTypes = async () => {
+  loading.value = true;
   try {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/identitas`);
     identities.value = response.data.data;
   } catch (error) {
+    showSnackbar('Error fetching identity types', 'error');
     console.error('Error fetching identity types:', error);
+  } finally {
+    loading.value = false;
   }
 };
 
-// Add identity type function
-const addIdentityType = async (identityData: { identitas_name: string; identitas_desc: string }) => {
+// Save identity type function
+const saveIdentityType = async (identityData: Identity) => {
   try {
-    await axios.post(`${import.meta.env.VITE_API_URL}/api/identitas`, identityData);
-    await getIdentityTypes(); // Refresh the identity list after adding
-    showDialog.value = false; // Close dialog after success
-    alert('Identity type added successfully!');
+    if (editMode.value) {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/identitas/${identityData.identitas_id}`, identityData);
+      showSnackbar('Identity type updated successfully!', 'success');
+    } else {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/identitas`, identityData);
+      showSnackbar('Identity type added successfully!', 'success');
+    }
+    await getIdentityTypes();
+    showDialog.value = false;
   } catch (error) {
-    console.error('Error adding identity type:', error);
+    showSnackbar('Error saving identity type', 'error');
+    console.error('Error saving identity type:', error);
   }
 };
 
-// Handle cancel
-const handleCancel = () => {
-  showDialog.value = false;
+// Open dialog to create a new identity type
+const openCreateDialog = () => {
+  editMode.value = false;
+  editedItem.value = null;
+  showDialog.value = true;
+};
+
+// Edit an existing identity type
+const editIdentityType = (item: Identity) => {
+  editMode.value = true;
+  editedItem.value = { ...item };
+  showDialog.value = true;
+};
+
+// Confirm delete action
+const confirmDelete = (item: Identity) => {
+  itemToDelete.value = item;
+  deleteDialog.value = true;
 };
 
 // Delete identity type function
-const deleteIdentityType = async (id: string) => {
+const deleteIdentityType = async () => {
+  if (!itemToDelete.value) return;
+
   try {
     const token = localStorage.getItem('token');
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/identitas/${id}`, {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/identitas/${itemToDelete.value.identitas_id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    await getIdentityTypes(); // Refresh the identity list after deletion
+    showSnackbar('Identity type deleted successfully!', 'success');
+    await getIdentityTypes();
   } catch (error) {
+    showSnackbar('Error deleting identity type', 'error');
     console.error('Error deleting identity type:', error);
+  } finally {
+    deleteDialog.value = false;
+    itemToDelete.value = null;
   }
 };
 
-// Go back to master page
+// Handle cancel action
+const handleCancel = () => {
+  showDialog.value = false;
+  editMode.value = false;
+  editedItem.value = null;
+};
+
+// Go back to the master page
 const backMaster = () => {
   router.push('/master');
 };
 
-// Fetch identity types on mount
+// Show snackbar with feedback
+const showSnackbar = (text: string, color: string) => {
+  snackbar.text = text;
+  snackbar.color = color;
+  snackbar.show = true;
+};
+
+// Fetch identity types on component mount
 onMounted(getIdentityTypes);
 </script>

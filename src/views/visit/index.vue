@@ -74,21 +74,24 @@
 
     <!-- Visitor Data -->
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2">
-        <h2>Visitor Data</h2>
-        <v-spacer></v-spacer>
-        <v-text-field
-          label="Search"
-          density="compact"
-          v-model="search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          hide-details
-          single-line
-        ></v-text-field>
+      <v-card-title>
+        <v-row>
+          <v-col cols="10">
+            <h2>Visitor Data</h2>
+          </v-col>
+          <v-col cols="2" class="text-right">
+            <v-text-field
+              v-model="search"
+              label="Search"
+              density="compact"
+              variant="outlined"
+              prepend-inner-icon="mdi-magnify"
+              hide-details
+              single-line
+            ></v-text-field>
+          </v-col>
+        </v-row>
       </v-card-title>
-
-      <v-divider></v-divider>
 
       <v-data-table
         :headers="headers"
