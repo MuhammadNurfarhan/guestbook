@@ -4,43 +4,18 @@
     <v-row>
       <v-col cols="4">
         <v-text-field label="Visitor Name" v-model="formData.visitor_name" variant="outlined" />
-        <v-select
-          :items="vendorNames"
-          label="Vendor Name"
-          v-model="formData.vendor_id"
-          variant="outlined"
-        />
-        <v-select
-          :items="vehicleTypes"
-          label="Vehicle Type"
-          v-model="formData.vehicle_id"
-          variant="outlined"
-        />
+        <v-select :items="vendorNames" label="Vendor Name" v-model="formData.vendor_id" variant="outlined" />
+        <v-select :items="vehicleTypes" label="Vehicle Type" v-model="formData.vehicle_id" variant="outlined" />
         <v-text-field label="Police Number" v-model="formData.policeNumber" variant="outlined" />
       </v-col>
 
       <v-col cols="4">
         <v-text-field label="Driver Name" v-model="formData.driverName" variant="outlined" />
-        <v-select
-          :items="idTypes"
-          label="ID Type"
-          v-model="formData.identitas_id"
-          variant="outlined"
-        />
+        <v-select :items="idTypes" label="ID Type" v-model="formData.identitas_id" variant="outlined" />
         <v-text-field label="ID Number" v-model="formData.identitas_no" variant="outlined" />
-        <v-select
-          :items="destinateBuildings"
-          label="Destination Building"
-          v-model="formData.destinate_id"
-          variant="outlined"
-        />
+        <v-select :items="destinateBuildings" label="Destination Building" v-model="formData.destinate_id" variant="outlined" />
         <v-text-field label="Destination PIC" v-model="formData.destination_pic" variant="outlined" />
-        <v-select
-          :items="visitorPurposes"
-          label="Visitor Purpose"
-          v-model="formData.Purpose_id"
-          variant="outlined"
-        />
+        <v-select :items="visitorPurposes" label="Visitor Purpose" v-model="formData.Purpose_id" variant="outlined" />
         <v-text-field label="Notes" v-model="formData.remarks" variant="outlined" />
       </v-col>
 
@@ -67,7 +42,9 @@
 
     <v-row class="mb-5">
       <v-col cols="6">
-        <v-btn class="mr-4" color="primary" @click="saveVisitorData">Submit</v-btn>
+        <v-btn v-if="isEditing" class="mr-4" color="primary" @click="updateVisitorData">Update</v-btn>
+        <v-btn v-if="isEditing" variant="outlined" color="red" @click="cancelEdit">Cancel</v-btn>
+        <v-btn v-else class="mr-4" color="primary" @click="saveVisitorData">Submit</v-btn>
         <v-btn variant="outlined" @click="refreshVisitorData">Refresh</v-btn>
       </v-col>
     </v-row>
@@ -80,15 +57,7 @@
             <h2>Visitor Data</h2>
           </v-col>
           <v-col cols="2" class="text-right">
-            <v-text-field
-              v-model="search"
-              label="Search"
-              density="compact"
-              variant="outlined"
-              prepend-inner-icon="mdi-magnify"
-              hide-details
-              single-line
-            ></v-text-field>
+            <v-text-field v-model="search" label="Search" density="compact" variant="outlined" prepend-inner-icon="mdi-magnify" hide-details single-line />
           </v-col>
         </v-row>
       </v-card-title>
@@ -100,6 +69,7 @@
         :loading="loading"
         loading-text="Loading user data..."
         class="elevation-1"
+        style="overflow-x: auto; white-space: nowrap"
       >
         <template v-slot:item="{ item }">
           <tr>
@@ -118,10 +88,29 @@
             <td>{{ item.Purpose_id }}</td>
             <td>{{ item.status }}</td>
             <td>{{ item.remarks }}</td>
+
+            <!-- Action Buttons -->
+            <td>
+              <v-btn icon @click="editVisitor(item)">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn icon @click="deleteVisitor(item.visit_no)">
+                <v-icon color="red">mdi-delete</v-icon>
+              </v-btn>
+              <v-btn icon @click="checkoutVisitor(item.visit_no)" v-if="!item.checkout_date">
+                <v-icon color="green">mdi-check</v-icon>
+              </v-btn>
+            </td>
           </tr>
         </template>
       </v-data-table>
     </v-card>
+
+    <!-- Error Display -->
+    <v-alert v-if="error" type="error" dismissible>{{ error }}</v-alert>
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+      {{ snackbar.message }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -150,16 +139,10 @@ interface VisitorData {
 }
 
 interface DetectedCode {
-  boundingBox: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
   rawValue: string;
 }
 
-// Data model for the form
+// State variables
 const formData = ref<VisitorData>({
   visit_no: '',
   visitor_name: '',
@@ -178,252 +161,188 @@ const formData = ref<VisitorData>({
   status: '',
 });
 
-// State for visitor data
+const headers = ref([
+  { title: 'Checkin Date', key: 'checkin_date' },
+  { title: 'Checkout Date', key: 'checkout_date' },
+  { title: 'Visit Number', key: 'visit_no' },
+  { title: 'Visitor Name', key: 'visitor_name' },
+  { title: 'Vehicle Type', key: 'vehicle_id' },
+  { title: 'Police Number', key: 'policeNumber' },
+  { title: 'Driver Name', key: 'driverName' },
+  { title: 'ID Type', key: 'identitas_id' },
+  { title: 'ID Number', key: 'identitas_no' },
+  { title: 'Destination Building', key: 'destinate_id' },
+  { title: 'Destination PIC', key: 'destination_pic' },
+  { title: 'Vendor Name', key: 'vendor_id' },
+  { title: 'Visitor Purpose', key: 'Purpose_id' },
+  { title: 'Status', key: 'status' },
+  { title: 'Remarks', key: 'remarks' },
+  { title: 'Actions', value: 'actions', sortable: false },
+]);
+
 const visitorData = ref<VisitorData[]>([]);
 const search = ref('');
 const loading = ref(false);
-
-// Header configuration for the data table
-const headers = ref([
-  { title: 'Check In', value: 'checkin_date' },
-  { title: 'Check Out', value: 'checkout_date' },
-  { title: 'Visitor No', value: 'visit_no' },
-  { title: 'Visitor Name', value: 'visitor_name' },
-  { title: 'Vehicle Type', value: 'vehicle_id' },
-  { title: 'Police Number', value: 'policeNumber' },
-  { title: 'Driver Name', value: 'driverName' },
-  { title: 'ID Type', value: 'identitas_id' },
-  { title: 'ID Number', value: 'identitas_no' },
-  { title: 'Destination Building', value: 'destinate_id' },
-  { title: 'Destination PIC', value: 'destination_pic' },
-  { title: 'Vendor Name', value: 'vendor_id' },
-  { title: 'Visitor Purpose', value: 'Purpose_id' },
-  { title: 'Status', value: 'status' },
-  { title: 'Note', value: 'remarks' },
-]);
-
-// data for select inputs
 const vendorNames = ref([]);
 const vehicleTypes = ref([]);
 const idTypes = ref([]);
 const destinateBuildings = ref([]);
 const visitorPurposes = ref([]);
+const isEditing = ref(false);
+const snackbar = ref({ show: false, message: '', color: 'success' });
 
-// QR code related state
 const result = ref('');
 const error = ref('');
-const qrCodeUrl = ref<string | null>('');
+const qrCodeUrl = ref<string | null>(null);
 const cameraOpen = ref(false);
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-// Function to open the camera for check-out
-const openCameraForCheckout = () => {
-  cameraOpen.value = true;
-};
+// Helper to handle API calls
+const apiRequest = async (url: string, method = 'get', data: VisitorData | null = null) => {
+  const token = localStorage.getItem('token');
+  const config = { headers: { Authorization: `Bearer ${token}` } };
 
-// Function to handle QR code detection for check-out
-const onDetect = (detectedCodes: DetectedCode[]) => {
-  if (debounceTimer) return;
-
-  debounceTimer = setTimeout(() => {
-    debounceTimer = null;
-  }, 1000);
-
-  result.value = detectedCodes[0].rawValue; // Assume the first detected code is the visit number
-
-  if (result.value) {
-    checkoutVisitorData(result.value); // Proceed with the checkout process
-  }
-};
-
-// Error handling for the QR code scanner
-function onError(err: Error) {
-  error.value = `[${err.name}]: ${err.message}`;
-}
-
-// Function to fetch visitor data list from API
-const getVisitorData = async () => {
-  loading.value = true; // Show loading spinner
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/visit`);
-    visitorData.value = response.data.data;
-  } catch (error) {
-    console.error('Error fetching visitor data:', error);
-  } finally {
-    loading.value = false; // Hide loading spinner
+    if (method === 'get') return await axios.get(url, config);
+    if (method === 'post') return await axios.post(url, data, config);
+    if (method === 'put') return await axios.put(url, data, config);
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'An error occurred. Please try again.';
+    return null;
   }
 };
 
-const handleApiError = (error: any) => {
-  if (error.response && error.response.data && error.response.data.message) {
-    alert(`Api Error: ${error.response.data.message}`);
-  } else {
-    alert('An error occurred. Please try again.');
-  }
+// Fetch dropdown options (vendor, vehicle, id, destination, purposes)
+const fetchDropdownOptions = async () => {
+  const vendors = await apiRequest(`${import.meta.env.VITE_API_URL}/api/vendor`);
+  vendorNames.value = vendors?.data?.map((vendor: { vendor_name: string }) => vendor.vendor_name) || [];
+
+  const vehicles = await apiRequest(`${import.meta.env.VITE_API_URL}/api/vehicle`);
+  vehicleTypes.value = vehicles?.data?.map((vehicle: { Vehicle_name: string }) => vehicle.Vehicle_name) || [];
+
+  const ids = await apiRequest(`${import.meta.env.VITE_API_URL}/api/identitas`);
+  idTypes.value = ids?.data?.map((id: { Identitas_name: string }) => id.Identitas_name) || [];
+
+  const buildings = await apiRequest(`${import.meta.env.VITE_API_URL}/api/destinate`);
+  destinateBuildings.value = buildings?.data?.map((building: { Destinate_name: string }) => building.Destinate_name) || [];
+
+  const purposes = await apiRequest(`${import.meta.env.VITE_API_URL}/api/purpose`);
+  visitorPurposes.value = purposes?.data?.map((purpose: { Purpose_name: string }) => purpose.Purpose_name) || [];
 };
 
-// Function to save visitor data
+// Submit visitor data
 const saveVisitorData = async () => {
-  try {
-    formData.value.visit_no = `VISIT_${new Date().getTime()}`; // Generate a unique ID for each visit
-    formData.value.checkin_date = new Date().toLocaleString(); // Check-in time
-    formData.value.status = 'in';
+  formData.value.visit_no = `VISIT_${Date.now()}`;
+  formData.value.checkin_date = new Date().toLocaleString();
+  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor`, 'post', formData.value);
 
-    const token = localStorage.getItem('token');
-    await axios.post(`${import.meta.env.VITE_API_URL}/api/visit`, formData.value, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    // Push the visitor data to the visitorData array
-    visitorData.value.push({ ...formData.value });
-
-    await generateQRCode(formData.value.visit_no);
-  } catch (error) {
-    handleApiError(error);
-  }
-};
-
-// Function to update visitor data
-const checkoutVisitorData = async (visitNo: string) => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('Authentication token not found');
-      return;
-    }
-
-    // Fetch the visitor data using the scanned visit number
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/visit/${visitNo}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    const visitor = response.data.data as VisitorData;
-
-    if (visitor) {
-      // Update the visitor's status to "out" and set the checkout date
-      visitor.status = 'out';
-      visitor.checkout_date = new Date().toLocaleString();
-      cameraOpen.value = false;
-
-      // Update the visitor data in the backend
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/visit/${visitNo}`, visitor, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
+  if (res) {
+    await QRCode.toDataURL(formData.value.visit_no)
+      .then((url: string) => {
+        qrCodeUrl.value = url;
+      })
+      .catch((err: Error) => {
+        error.value = 'Error generating QR Code';
       });
 
-      console.log('Visitor has checked out:', visitor);
-    } else {
-      console.warn('Visitor is already checked out.');
-    }
-  } catch (error) {
-    handleApiError(error);
-  } finally {
-    cameraOpen.value = false; // Close the camera when done
     refreshVisitorData();
   }
 };
 
-// Function to refresh visitor data
+// Fetch visitor data
 const refreshVisitorData = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/visit`);  // Ganti dengan URL backend Anda
-    visitorData.value = response.data.data;
-  } catch (error) {
-    console.error('Error fetching visitor data:', error);
+  loading.value = true;
+  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor`);
+  visitorData.value = res?.data || [];
+  loading.value = false;
+};
+
+// QR code scan for checkout
+const onDetect = async (data: DetectedCode) => {
+  result.value = data.rawValue;
+  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${result.value}/checkout`, 'put');
+
+  if (res) refreshVisitorData();
+};
+
+// QR code scan error
+const onError = (err: Error) => {
+  error.value = `QR Code Error: ${err.message}`;
+};
+
+// Open camera for QR code checkout
+const openCameraForCheckout = () => {
+  cameraOpen.value = !cameraOpen.value;
+  error.value = '';
+};
+
+const editVisitor = (item: VisitorData) => {
+  formData.value = { ...item };
+  isEditing.value = true;
+};
+
+const deleteVisitor = async (visit_no: string) => {
+  if (confirm('Are you sure you want to delete this visitor?')) {
+    const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${visit_no}`, 'delete');
+    if (res) refreshVisitorData(); // Refresh the data after successful deletion
   }
 };
 
-// Function to generate QR code
-const generateQRCode = async (visitNo: string) => {
-  try {
-    // Generate the QR code with visit number
-    const qrCodeDataUrl = await QRCode.toDataURL(visitNo);
-    qrCodeUrl.value = qrCodeDataUrl;  // Set the QR code URL to the ref
+// Checkout visitor by visit number
+const checkoutVisitor = async (visit_no: string) => {
+  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${visit_no}/checkout`, 'put');
+  if (res) refreshVisitorData(); // Refresh the data after successful checkout
+};
 
-    // Automatically print the QR code after generation
-    printQRCode();
-  } catch (error) {
-    console.error('Error generating QR code:', error);
+// Function to update visitor data
+const updateVisitorData = async () => {
+  try {
+    const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${formData.value.visit_no}`, 'put', formData.value);
+    if (res) {
+      showSnackbar('Visitor updated successfully!', 'success');
+      refreshVisitorData();
+      cancelEdit();
+    } else {
+      showSnackbar('Error updating visitor', 'error');
+    }
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'An error occurred. Please try again.(error)';
   }
 };
 
-// Function to print the QR code
-const printQRCode = () => {
-  const printContent = `
-    <h1>Visitor QR Code</h1>
-    <img src="${qrCodeUrl.value}" alt="QR Code" />
-  `;
-  const originalContent = document.body.innerHTML;
-
-  document.body.innerHTML = printContent;
-  window.print();
-  document.body.innerHTML = originalContent;
+// Function to cancel the editing process
+const cancelEdit = () => {
+  formData.value = {
+    visit_no: '',
+    visitor_name: '',
+    vendor_id: null,
+    vehicle_id: null,
+    policeNumber: '',
+    driverName: '',
+    identitas_id: null,
+    identitas_no: '',
+    destinate_id: null,
+    destination_pic: '',
+    Purpose_id: null,
+    remarks: '',
+    checkin_date: '',
+    checkout_date: '',
+    status: '',
+  }; // Reset form
+  isEditing.value = false; // Exit edit mode
 };
 
-const getVendorData = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vendor`);
-    const data = response.data.data;
-    vendorNames.value = data.map((vendor: { vendor_name: string }) => vendor.vendor_name);
-  } catch (error) {
-    console.error('Error fetching vendor data:', error);
-  }
+const showSnackbar = (message: string, color: string) => {
+  snackbar.value = { show: true, message, color };
 };
 
-const getVehicleTypes = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vehicle`);
-    const data = response.data.data;
-    vehicleTypes.value = data.map((vehicle: { Vehicle_name: string }) => vehicle.Vehicle_name);
-  } catch (error) {
-    console.error('Error fetching vehicle types:', error);
-  }
-};
-
-const getIdTypes = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/identitas`);
-    const data = response.data.data;
-    idTypes.value = data.map((id: { Identitas_name: string }) => id.Identitas_name);
-  } catch (error) {
-    console.error('Error fetching ID types:', error);
-  }
-};
-
-const getDestinateBuildings = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/destinate`);
-    const data = response.data.data;
-    destinateBuildings.value = data.map((building: { Destinate_name: string }) => building.Destinate_name);
-  } catch (error) {
-    console.error('Error fetching destination buildings:', error);
-  }
-};
-
-const getVisitorPurposes = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/purpose`);
-    const data = response.data.data;
-    visitorPurposes.value = data.map((purpose: { Purpose_name: string }) => purpose.Purpose_name);
-  } catch (error) {
-    console.error('Error fetching visitor purposes:', error);
-  }
-};
-
-// Ambil data visitor ketika komponen dimuat
 onMounted(async () => {
-  await getVisitorData();
+  await fetchDropdownOptions();
   await refreshVisitorData();
-  await getVendorData();
-  await getVehicleTypes();
-  await getIdTypes();
-  await getDestinateBuildings();
-  await getVisitorPurposes();
 });
-
 </script>
+
+<style scoped>
+.elevation-1 {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+</style>

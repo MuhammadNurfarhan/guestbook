@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import Layout from '../layouts/Layout.vue';
-import Dashboard from '@/views/Dashboard.vue';
+import Dashboard from '@/views/dashboard/index.vue';
 import Master from '@/views/master/index.vue';
 import Visit from '@/views/visit/index.vue';
-import Report from '@/views/Report.vue';
-import Setting from '@/views/Setting.vue';
+import Report from '@/views/report/index.vue';
+import Setting from '@/views/setting/index.vue';
 import Login from '@/components/Login.vue';
 import Register from '@/components/Register.vue';
 import MasterVendor from '@/views/master/MasterVendor.vue';
