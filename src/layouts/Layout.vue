@@ -14,9 +14,8 @@
     <v-navigation-drawer v-model="drawer" app>
       <!-- Logo Section -->
       <img
-        src="@/assets/logo.png"
+        src="@/assets/images/pages/yihquan-logo.png"
         alt="Logo"
-        width="80"
         class="mx-auto d-flex mt-4"
       />
 

@@ -15,7 +15,7 @@
         <v-text-field label="ID Number" v-model="formData.identitas_no" variant="outlined" />
         <v-select :items="destinateBuildings" label="Destination Building" v-model="formData.destinate_id" variant="outlined" />
         <v-text-field label="Destination PIC" v-model="formData.destination_pic" variant="outlined" />
-        <v-select :items="visitorPurposes" label="Visitor Purpose" v-model="formData.Purpose_id" variant="outlined" />
+        <v-select :items="visitorPurposes" label="Visitor Purpose" v-model="formData.purpose_id" variant="outlined" />
         <v-text-field label="Notes" v-model="formData.remarks" variant="outlined" />
       </v-col>
 
@@ -85,7 +85,7 @@
             <td>{{ item.destinate_id }}</td>
             <td>{{ item.destination_pic }}</td>
             <td>{{ item.vendor_id }}</td>
-            <td>{{ item.Purpose_id }}</td>
+            <td>{{ item.purpose_id }}</td>
             <td>{{ item.status }}</td>
             <td>{{ item.remarks }}</td>
 
@@ -131,7 +131,7 @@ interface VisitorData {
   identitas_no: string;
   destinate_id: null;
   destination_pic: string;
-  Purpose_id: null;
+  purpose_id: null;
   remarks: string;
   checkin_date: string;
   checkout_date: string;
@@ -154,7 +154,7 @@ const formData = ref<VisitorData>({
   identitas_no: '',
   destinate_id: null,
   destination_pic: '',
-  Purpose_id: null,
+  purpose_id: null,
   remarks: '',
   checkin_date: '',
   checkout_date: '',
@@ -174,7 +174,7 @@ const headers = ref([
   { title: 'Destination Building', key: 'destinate_id' },
   { title: 'Destination PIC', key: 'destination_pic' },
   { title: 'Vendor Name', key: 'vendor_id' },
-  { title: 'Visitor Purpose', key: 'Purpose_id' },
+  { title: 'Visitor Purpose', key: 'purpose_id' },
   { title: 'Status', key: 'status' },
   { title: 'Remarks', key: 'remarks' },
   { title: 'Actions', value: 'actions', sortable: false },
@@ -322,7 +322,7 @@ const cancelEdit = () => {
     identitas_no: '',
     destinate_id: null,
     destination_pic: '',
-    Purpose_id: null,
+    purpose_id: null,
     remarks: '',
     checkin_date: '',
     checkout_date: '',

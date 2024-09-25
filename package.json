@@ -1,7 +1,10 @@
 {
   "name": "dashboard-vue",
   "version": "0.0.0",
-  "private": true,
+  "author": {
+    "name" : "Muhammad Nurfarhan",
+    "email": "m_nurfarhan022@yihquan.co.id"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -79,6 +79,22 @@ const routes = [
     name: 'Register',
     component: Register,
   },
+  {
+    name: "404",
+    path: "/404",
+    component: () => import("@/views/404.vue"),
+    meta: {
+      public: true,
+      hidden: true,
+    },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/404",
+    meta: {
+      hidden: true,
+    },
+  },
 ];
 
 const router = createRouter({
@@ -88,6 +104,9 @@ const router = createRouter({
 
 // Navigation guard for protected routes
 router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  authStore.restoreUser()
+
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token');
     if (!token) {
