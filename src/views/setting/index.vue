@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <Parent-card title="Setting">
     <v-card>
       <v-card-title class="text-h4">User Management</v-card-title>
       <v-card-text>
@@ -102,7 +102,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.text }}
     </v-snackbar>
-  </v-container>
+  </Parent-card>
 </template>
 
 <script setup lang="ts">

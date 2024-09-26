@@ -1,24 +1,14 @@
+import { registerPlugins } from "@/plugins";
+
 import { createApp } from 'vue';
 import App from './App.vue';
 
-// Vuetify
-import 'vuetify/styles';
-import '@mdi/font/css/materialdesignicons.css';
-import { createVuetify } from 'vuetify';
-import * as components from 'vuetify/components';
-import * as directives from 'vuetify/directives';
-import { createPinia } from 'pinia';
-import router from './router';
-
-const vuetify = createVuetify({
-  components,
-  directives,
-});
+import "@/styles/settings.scss";
+import "element-plus/es/components/message/style/css";
+import "element-plus/es/components/message-box/style/css";
 
 const app = createApp(App);
 
-app.use(createPinia());
-app.use(router);
-app.use(vuetify);
+registerPlugins(app);
 
 app.mount('#app');

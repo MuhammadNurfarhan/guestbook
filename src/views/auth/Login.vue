@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/modules/authStore';
 import { useRouter } from 'vue-router';
 
 // State
@@ -82,13 +82,8 @@ const submitLogin = async () =>  {
   }
 };
 
-// Watcher to save input values to localStorage
-// watch(email, (newValue) => {
-//   localStorage.setItem('email', newValue);
-// });
-
 </script>
 
 <style lang="scss">
-@import './auth.scss';
+@import '@/components/auth.scss';
 </style>

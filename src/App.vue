@@ -1,17 +1,7 @@
+<script lang="ts" setup></script>
+
 <template>
-  <v-app>
-    <router-view />
-  </v-app>
+  <RouterView />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'App',
-});
-</script>
-
-<style>
-/* Global styles if any */
-</style>
+<style></style>

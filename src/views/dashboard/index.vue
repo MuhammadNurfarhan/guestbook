@@ -1,33 +1,32 @@
 <template>
-  <v-container fluid>
-    <h1>Dashboard</h1>
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <visitor-chart />
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row class="mt-5">
-      <v-col cols="12" md="6">
-        <v-card>
-          <vendor-chart />
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-card>
-          <vehicle-chart />
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  <Parent-card title="Dashboard">
+      <v-row>
+        <v-col cols="12">
+          <v-card>
+            <visitor-chart />
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row class="mt-5">
+        <v-col cols="12" md="6">
+          <v-card>
+            <vendor-chart />
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-card>
+            <vehicle-chart />
+          </v-card>
+        </v-col>
+      </v-row>
+  </Parent-card>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import VendorChart from '@/components/VendorChart.vue';
-import VisitorChart from '@/components/VisitorChart.vue';
-import VehicleChart from '@/components/VehicleChart.vue';
+import VendorChart from '@/components/charts/VendorChart.vue';
+import VisitorChart from '@/components/charts/VisitorChart.vue';
+import VehicleChart from '@/components/charts/VehicleChart.vue';
 
 export default defineComponent({
   name: 'Dashboard',

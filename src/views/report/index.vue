@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <Parent-card title="Report">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center text-h4">
         <span>Visitor Report</span>
@@ -79,7 +79,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
-  </v-container>
+  </Parent-card>
 </template>
 
 <script setup lang="ts">

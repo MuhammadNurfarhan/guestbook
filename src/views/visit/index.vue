@@ -1,6 +1,5 @@
 <template>
-  <v-container>
-    <h1>Visitor</h1>
+  <Parent-card title="Visitor Form">
     <v-row>
       <v-col cols="4">
         <v-text-field label="Visitor Name" v-model="formData.visitor_name" variant="outlined" />
@@ -111,7 +110,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
-  </v-container>
+  </Parent-card>
 </template>
 
 <script setup lang="ts">
