@@ -1,7 +1,13 @@
 <script lang="ts" setup>
 import { useWebsiteStore } from "@/stores/modules/website";
+import { useAuthStore } from "@/stores/modules/authStore";
 
 const website = useWebsiteStore();
+const authStore = useAuthStore();
+
+const logout = () => {
+  authStore.logout();
+};
 </script>
 
 <template>
@@ -30,5 +36,7 @@ const website = useWebsiteStore();
     <v-spacer />
 
     <!-- user and logout -->
+    <v-btn prepend-icon="mdi-account" variant="tonal" class="mr-2" rounded readonly>{{ authStore.role }}</v-btn>
+    <v-btn prepend-icon="mdi-logout" variant="outlined" @click="logout">Logout</v-btn>
   </v-app-bar>
 </template>

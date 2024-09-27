@@ -1,112 +1,4 @@
-<template>
-  <Parent-card title="Setting">
-    <v-card>
-      <v-card-title class="text-h4">User Management</v-card-title>
-      <v-card-text>
-        <v-data-table
-          :items="users"
-          :headers="headers"
-          :loading="loading"
-          item-value="id"
-          class="elevation-1"
-          :items-per-page-options="[5, 10, 20, 50]"
-          :items-per-page="itemsPerPage"
-          loading-text="Loading user data..."
-        >
-          <template v-slot:top>
-            <v-toolbar flat>
-              <v-toolbar-title>User List</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-text-field
-                v-model="search"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                density="compact"
-                label="Search"
-                class="mr-4"
-                single-line
-                hide-details
-              ></v-text-field>
-              <v-btn @click="openAddDialog" class="mr-2 bg-primary">Add User</v-btn>
-              <v-btn variant="outlined" @click="refreshData" :loading="loading" append-icon="mdi-refresh">Refresh</v-btn>
-            </v-toolbar>
-          </template>
-
-          <template v-slot:item="{ item }">
-            <tr>
-              <td>{{ item.name }}</td>
-              <td>{{ item.email }}</td>
-              <td>{{ item.role }}</td>
-              <td>
-                <v-btn small color="primary" @click="openEditDialog(item)" class="mr-2">Edit</v-btn>
-                <v-btn small color="error" @click="confirmDelete(item)">Delete</v-btn>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-card-text>
-    </v-card>
-
-    <!-- Add/Edit User Dialog -->
-    <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
-        <v-card-title>{{ formTitle }}</v-card-title>
-        <v-card-text>
-          <v-form ref="form" v-model="valid" @submit.prevent="saveUser">
-            <v-text-field
-              v-model="editedUser.name"
-              label="Name"
-              :rules="[v => !!v || 'Name is required']"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="editedUser.email"
-              label="Email"
-              :rules="[
-                v => !!v || 'Email is required',
-                v => /.+@.+\..+/.test(v) || 'Email must be valid'
-              ]"
-              required
-            ></v-text-field>
-            <v-select
-              v-model="editedUser.role"
-              :items="roles"
-              label="Role"
-              :rules="[v => !!v || 'Role is required']"
-              required
-            ></v-select>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn class="bg-primary" @click="saveUser" :disabled="!valid || saving">Save</v-btn>
-          <v-btn class="bg-error" @click="closeDialog">Cancel</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="deleteDialog" max-width="400px">
-      <v-card>
-        <v-card-title>Confirm Delete</v-card-title>
-        <v-card-text>Are you sure you want to delete this user?</v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="error" @click="deleteUser" :loading="deleting">Delete</v-btn>
-          <v-btn color="grey" @click="deleteDialog = false">Cancel</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Snackbar for notifications -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
-      {{ snackbar.text }}
-    </v-snackbar>
-  </Parent-card>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 
 interface User {
@@ -252,8 +144,111 @@ watch(search, () => {
 });
 </script>
 
-<style scoped>
-.v-card-title {
-  font-weight: bold;
-}
-</style>
+<template>
+  <Parent-card v-loading="loading" title="Setting">
+    <v-card>
+      <v-card-title class="text-h4">User Management</v-card-title>
+      <v-card-text>
+        <v-data-table
+          :items="users"
+          :headers="headers"
+          :loading="loading"
+          item-value="id"
+          class="elevation-1"
+          :items-per-page-options="[5, 10, 20, 50]"
+          :items-per-page="itemsPerPage"
+          loading-text="Loading user data..."
+        >
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-toolbar-title>User List</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-text-field
+                v-model="search"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                density="compact"
+                label="Search"
+                class="mr-4"
+                single-line
+                hide-details
+              ></v-text-field>
+              <v-btn @click="openAddDialog" class="mr-2 bg-primary">Add User</v-btn>
+              <v-btn variant="outlined" @click="refreshData" :loading="loading" append-icon="mdi-refresh">Refresh</v-btn>
+            </v-toolbar>
+          </template>
+
+          <template v-slot:item="{ item }">
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ item.email }}</td>
+              <td>{{ item.role }}</td>
+              <td>
+                <v-btn small color="primary" @click="openEditDialog(item)" class="mr-2">Edit</v-btn>
+                <v-btn small color="error" @click="confirmDelete(item)">Delete</v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
+
+    <!-- Add/Edit User Dialog -->
+    <v-dialog v-model="dialog" max-width="500px">
+      <v-card>
+        <v-card-title>{{ formTitle }}</v-card-title>
+        <v-card-text>
+          <v-form ref="form" v-model="valid" @submit.prevent="saveUser">
+            <v-text-field
+              v-model="editedUser.name"
+              label="Name"
+              :rules="[v => !!v || 'Name is required']"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="editedUser.email"
+              label="Email"
+              :rules="[
+                v => !!v || 'Email is required',
+                v => /.+@.+\..+/.test(v) || 'Email must be valid'
+              ]"
+              required
+            ></v-text-field>
+            <v-select
+              v-model="editedUser.role"
+              :items="roles"
+              label="Role"
+              :rules="[v => !!v || 'Role is required']"
+              required
+            ></v-select>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="bg-primary" @click="saveUser" :disabled="!valid || saving">Save</v-btn>
+          <v-btn class="bg-error" @click="closeDialog">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="400px">
+      <v-card>
+        <v-card-title>Confirm Delete</v-card-title>
+        <v-card-text>Are you sure you want to delete this user?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="error" @click="deleteUser" :loading="deleting">Delete</v-btn>
+          <v-btn color="grey" @click="deleteDialog = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar for notifications -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+      {{ snackbar.text }}
+    </v-snackbar>
+  </Parent-card>
+</template>
+
+<style scoped></style>

@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '../stores/modules/authStore';
+import { useAuthStore } from '@/stores/modules/authStore';
 import { useRouter } from 'vue-router';
 
 // State
@@ -89,5 +89,5 @@ const submitRegister = async () => {
 </script>
 
 <style lang="scss">
-@import './auth.scss';
+@import '@/styles/auth.scss';
 </style>

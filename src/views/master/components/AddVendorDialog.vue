@@ -2,13 +2,14 @@
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Add Master Vendor</span>
+        <span class="text-h5">Add Vendor</span>
       </v-card-title>
-
+      <v-divider />
       <v-card-text>
         <v-form v-model="valid" ref="form">
           <v-text-field
             v-model="vendor_name"
+            :rules="[rules.required]"
             label="Vendor Name"
             variant="outlined"
             class="mb-2"
@@ -16,6 +17,7 @@
           ></v-text-field>
           <v-textarea
             v-model="vendor_desc"
+            :rules="[rules.required]"
             label="Vendor Description"
             variant="outlined"
           ></v-textarea>
@@ -24,8 +26,8 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="cancel">Cancel</v-btn>
-        <v-btn :disabled="!valid" color="primary" @click="save">Save</v-btn>
+        <v-btn :disabled="!valid" class="bg-primary" @click="save">Save</v-btn>
+        <v-btn class="bg-error" @click="cancel">Cancel</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -44,6 +46,11 @@ const dialog = ref(props.show);
 const vendor_name = ref('');
 const vendor_desc = ref('');
 const valid = ref(false);
+
+// Validation rules
+const rules = {
+  required: (value: string) => !!value || 'Required.',
+};
 
 // Watch for dialog visibility
 watch(() => props.show, (newValue) => {

@@ -27,4 +27,7 @@ declare module 'vue' {
     VerticalSidebar: typeof import('./layouts/internal/vertical-sidebar/VerticalSidebar.vue')['default']
     VisitorChart: typeof import('./components/charts/VisitorChart.vue')['default']
   }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
+  }
 }

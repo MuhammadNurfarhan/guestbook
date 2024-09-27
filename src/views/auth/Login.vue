@@ -45,8 +45,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { useAuthStore } from '../stores/modules/authStore';
+import { ref } from 'vue';
+import { useAuthStore } from '@/stores/modules/authStore';
 import { useRouter } from 'vue-router';
 
 // State
@@ -85,5 +85,5 @@ const submitLogin = async () =>  {
 </script>
 
 <style lang="scss">
-@import '@/components/auth.scss';
+@import '@/styles/auth.scss';
 </style>

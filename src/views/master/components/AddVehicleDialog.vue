@@ -2,9 +2,9 @@
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Add Master Vehicle Type</span>
+        <span class="text-h5">Add Vehicle Type</span>
       </v-card-title>
-
+      <v-divider />
       <v-card-text>
         <v-form v-model="valid" ref="form">
           <v-text-field
@@ -26,8 +26,8 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="cancel">Cancel</v-btn>
-        <v-btn :disabled="!valid" color="primary" @click="save">Save</v-btn>
+        <v-btn :disabled="!valid" class="bg-primary" @click="save">Save</v-btn>
+        <v-btn class="bg-error" @click="cancel">Cancel</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

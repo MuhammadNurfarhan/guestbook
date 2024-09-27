@@ -1,8 +1,8 @@
 <template>
-  <Parent-card title="Visitor Form">
+  <Parent-card title="Visitor Form" v-loading="loading">
     <v-row>
       <v-col cols="4">
-        <v-text-field label="Visitor Name" v-model="formData.visitor_name" variant="outlined" />
+        <v-text-field label="Visitor Name" v-model="formData.visit_name" variant="outlined" />
         <v-select :items="vendorNames" label="Vendor Name" v-model="formData.vendor_id" variant="outlined" />
         <v-select :items="vehicleTypes" label="Vehicle Type" v-model="formData.vehicle_id" variant="outlined" />
         <v-text-field label="Police Number" v-model="formData.policeNumber" variant="outlined" />
@@ -13,7 +13,7 @@
         <v-select :items="idTypes" label="ID Type" v-model="formData.identitas_id" variant="outlined" />
         <v-text-field label="ID Number" v-model="formData.identitas_no" variant="outlined" />
         <v-select :items="destinateBuildings" label="Destination Building" v-model="formData.destinate_id" variant="outlined" />
-        <v-text-field label="Destination PIC" v-model="formData.destination_pic" variant="outlined" />
+        <v-text-field label="Destination PIC" v-model="formData.destinate_pic" variant="outlined" />
         <v-select :items="visitorPurposes" label="Visitor Purpose" v-model="formData.purpose_id" variant="outlined" />
         <v-text-field label="Notes" v-model="formData.remarks" variant="outlined" />
       </v-col>
@@ -42,9 +42,9 @@
     <v-row class="mb-5">
       <v-col cols="6">
         <v-btn v-if="isEditing" class="mr-4" color="primary" @click="updateVisitorData">Update</v-btn>
-        <v-btn v-if="isEditing" variant="outlined" color="red" @click="cancelEdit">Cancel</v-btn>
+        <v-btn v-if="isEditing" class="mr-4" color="red" @click="cancelEdit">Cancel</v-btn>
         <v-btn v-else class="mr-4" color="primary" @click="saveVisitorData">Submit</v-btn>
-        <v-btn variant="outlined" @click="refreshVisitorData">Refresh</v-btn>
+        <v-btn variant="outlined" @click="getVisitorData">Refresh</v-btn>
       </v-col>
     </v-row>
 
@@ -72,17 +72,17 @@
       >
         <template v-slot:item="{ item }">
           <tr>
-            <td>{{ item.checkin_date }}</td>
-            <td>{{ item.checkout_date }}</td>
+            <td>{{ item.check_in }}</td>
+            <td>{{ item.check_out }}</td>
             <td>{{ item.visit_no }}</td>
-            <td>{{ item.visitor_name }}</td>
+            <td>{{ item.visit_name }}</td>
             <td>{{ item.vehicle_id }}</td>
             <td>{{ item.policeNumber }}</td>
             <td>{{ item.driverName }}</td>
             <td>{{ item.identitas_id }}</td>
             <td>{{ item.identitas_no }}</td>
             <td>{{ item.destinate_id }}</td>
-            <td>{{ item.destination_pic }}</td>
+            <td>{{ item.destinate_pic }}</td>
             <td>{{ item.vendor_id }}</td>
             <td>{{ item.purpose_id }}</td>
             <td>{{ item.status }}</td>
@@ -96,7 +96,7 @@
               <v-btn icon @click="deleteVisitor(item.visit_no)">
                 <v-icon color="red">mdi-delete</v-icon>
               </v-btn>
-              <v-btn icon @click="checkoutVisitor(item.visit_no)" v-if="!item.checkout_date">
+              <v-btn icon @click="checkoutVisitor(item.visit_no)" v-if="!item.check_out">
                 <v-icon color="green">mdi-check</v-icon>
               </v-btn>
             </td>
@@ -118,22 +118,24 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { QrcodeStream } from 'vue-qrcode-reader';
 import QRCode from 'qrcode';
+import { getVisitAPI } from "@/api/visit/visit";
+import { useLoading } from '@/hooks';
 
 interface VisitorData {
   visit_no: string;
-  visitor_name: string;
-  vendor_id: null;
-  vehicle_id: null;
+  visit_name: string;
+  vendor_id: null | string;
+  vehicle_id: null | string;
   policeNumber: string;
   driverName: string;
-  identitas_id: null;
+  identitas_id: null | string;
   identitas_no: string;
-  destinate_id: null;
-  destination_pic: string;
-  purpose_id: null;
+  destinate_id: null | string;
+  destinate_pic: string;
+  purpose_id: null | string;
   remarks: string;
-  checkin_date: string;
-  checkout_date: string;
+  check_in: string;
+  check_out: string;
   status: string;
 }
 
@@ -144,44 +146,43 @@ interface DetectedCode {
 // State variables
 const formData = ref<VisitorData>({
   visit_no: '',
-  visitor_name: '',
+  visit_name: '',
   vendor_id: null,
-  vehicle_id: null,
+  vehicle_id: null ,
   policeNumber: '',
   driverName: '',
   identitas_id: null,
   identitas_no: '',
   destinate_id: null,
-  destination_pic: '',
+  destinate_pic: '',
   purpose_id: null,
   remarks: '',
-  checkin_date: '',
-  checkout_date: '',
+  check_in: '',
+  check_out: '',
   status: '',
 });
 
 const headers = ref([
-  { title: 'Checkin Date', key: 'checkin_date' },
-  { title: 'Checkout Date', key: 'checkout_date' },
+  { title: 'Checkin', key: 'check_in' },
+  { title: 'Checkout', key: 'check_out' },
   { title: 'Visit Number', key: 'visit_no' },
-  { title: 'Visitor Name', key: 'visitor_name' },
+  { title: 'Visitor Name', key: 'visit_name' },
   { title: 'Vehicle Type', key: 'vehicle_id' },
   { title: 'Police Number', key: 'policeNumber' },
   { title: 'Driver Name', key: 'driverName' },
   { title: 'ID Type', key: 'identitas_id' },
   { title: 'ID Number', key: 'identitas_no' },
   { title: 'Destination Building', key: 'destinate_id' },
-  { title: 'Destination PIC', key: 'destination_pic' },
+  { title: 'Destination PIC', key: 'destinate_pic' },
   { title: 'Vendor Name', key: 'vendor_id' },
   { title: 'Visitor Purpose', key: 'purpose_id' },
   { title: 'Status', key: 'status' },
   { title: 'Remarks', key: 'remarks' },
-  { title: 'Actions', value: 'actions', sortable: false },
+  { title: 'Actions', key: 'actions' },
 ]);
 
 const visitorData = ref<VisitorData[]>([]);
 const search = ref('');
-const loading = ref(false);
 const vendorNames = ref([]);
 const vehicleTypes = ref([]);
 const idTypes = ref([]);
@@ -189,6 +190,7 @@ const destinateBuildings = ref([]);
 const visitorPurposes = ref([]);
 const isEditing = ref(false);
 const snackbar = ref({ show: false, message: '', color: 'success' });
+const { loading, showLoading, hideLoading } = useLoading();
 
 const result = ref('');
 const error = ref('');
@@ -231,7 +233,7 @@ const fetchDropdownOptions = async () => {
 // Submit visitor data
 const saveVisitorData = async () => {
   formData.value.visit_no = `VISIT_${Date.now()}`;
-  formData.value.checkin_date = new Date().toLocaleString();
+  formData.value.check_in = new Date().toLocaleString();
   const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor`, 'post', formData.value);
 
   if (res) {
@@ -243,16 +245,22 @@ const saveVisitorData = async () => {
         error.value = 'Error generating QR Code';
       });
 
-    refreshVisitorData();
+    getVisitorData();
   }
 };
 
-// Fetch visitor data
-const refreshVisitorData = async () => {
-  loading.value = true;
-  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor`);
-  visitorData.value = res?.data || [];
-  loading.value = false;
+// get visitor data
+const getVisitorData = async () => {
+  showLoading();
+  try {
+    const today = await new Date();
+    const res = await getVisitAPI(today)
+    visitorData.value = await res?.data || [];
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'An error occurred. Please try again.(error)';
+  } finally {
+    hideLoading();
+  }
 };
 
 // QR code scan for checkout
@@ -260,7 +268,7 @@ const onDetect = async (data: DetectedCode) => {
   result.value = data.rawValue;
   const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${result.value}/checkout`, 'put');
 
-  if (res) refreshVisitorData();
+  if (res) getVisitorData();
 };
 
 // QR code scan error
@@ -282,23 +290,23 @@ const editVisitor = (item: VisitorData) => {
 const deleteVisitor = async (visit_no: string) => {
   if (confirm('Are you sure you want to delete this visitor?')) {
     const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${visit_no}`, 'delete');
-    if (res) refreshVisitorData(); // Refresh the data after successful deletion
+    if (res) getVisitorData(); // Refresh the data after successful deletion
   }
 };
 
 // Checkout visitor by visit number
 const checkoutVisitor = async (visit_no: string) => {
-  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${visit_no}/checkout`, 'put');
-  if (res) refreshVisitorData(); // Refresh the data after successful checkout
+  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${visit_no}`, 'put');
+  if (res) getVisitorData(); // Refresh the data after successful checkout
 };
 
 // Function to update visitor data
 const updateVisitorData = async () => {
   try {
-    const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${formData.value.visit_no}`, 'put', formData.value);
+    const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${formData.value.visit_no}`, 'put', formData.value);
     if (res) {
       showSnackbar('Visitor updated successfully!', 'success');
-      refreshVisitorData();
+      getVisitorData();
       cancelEdit();
     } else {
       showSnackbar('Error updating visitor', 'error');
@@ -312,7 +320,7 @@ const updateVisitorData = async () => {
 const cancelEdit = () => {
   formData.value = {
     visit_no: '',
-    visitor_name: '',
+    visit_name: '',
     vendor_id: null,
     vehicle_id: null,
     policeNumber: '',
@@ -320,11 +328,11 @@ const cancelEdit = () => {
     identitas_id: null,
     identitas_no: '',
     destinate_id: null,
-    destination_pic: '',
+    destinate_pic: '',
     purpose_id: null,
     remarks: '',
-    checkin_date: '',
-    checkout_date: '',
+    check_in: '',
+    check_out: '',
     status: '',
   }; // Reset form
   isEditing.value = false; // Exit edit mode
@@ -336,7 +344,11 @@ const showSnackbar = (message: string, color: string) => {
 
 onMounted(async () => {
   await fetchDropdownOptions();
-  await refreshVisitorData();
+  await getVisitorData();
+});
+
+onBeforeMount(() => {
+  getVisitorData();
 });
 </script>
 
