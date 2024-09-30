@@ -1,13 +1,5 @@
 import request from "@/utils/request";
 
-// export const getVisitAPI = (params: any) => {
-//   return request({
-//     url: `/api/v1/visit/`,
-//     method: "get",
-//     params,
-//   });
-// };
-
 export const getVisitAPI = (date: Date) => {
   const formattedDate = formatDate(date);
   return request({
@@ -26,6 +18,22 @@ export const createVisitAPI = (data: any) => {
     data,
   });
 };
+
+export const updateVisitAPI = (data: any) => {
+  return request({
+    url: "/api/v1/visit",
+    method: "put",
+    data,
+  });
+};
+
+export const deleteVisitAPI = (data: any) => {
+  return request({
+    url: "/api/v1/visit",
+    method: "delete",
+    data,
+  });
+}
 
 // Helper function to format the date
 function formatDate(date: Date): string {

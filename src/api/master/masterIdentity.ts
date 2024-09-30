@@ -1,15 +1,14 @@
 import request from "@/utils/request";
 
 
-export const getMasterIdentityAPI = (params: any) => {
+export const getIdentityAPI = () => {
   return request({
-    url: "/api/v1/master/identity",
-    method: "get",
-    params,
+    url: "/api/v1/identitas/list",
+    method: "get"
   });
 };
 
-export const createMasterIdentityAPI = (data: any) => {
+export const createIdentityAPI = (data: any) => {
   return request({
     url: "/api/v1/master/identity",
     method: "post",
@@ -17,7 +16,7 @@ export const createMasterIdentityAPI = (data: any) => {
   });
 };
 
-export const updateMasterIdentityAPI = (data: any) => {
+export const updateIdentityAPI = (data: any) => {
   return request({
     url: "/api/v1/master/identity",
     method: "put",

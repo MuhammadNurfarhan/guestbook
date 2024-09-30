@@ -1,14 +1,13 @@
 import request from "@/utils/request";
 
-export const getMasterVehicleAPI = (params: any) => {
+export const getVehicleAPI = () => {
   return request({
-    url: "/api/v1/master/vehicle",
+    url: "/api/v1/vehicle/list",
     method: "get",
-    params,
   });
 };
 
-export const createMasterVehicleAPI = (data: any) => {
+export const createVehicleAPI = (data: any) => {
   return request({
     url: "/api/v1/master/vehicle",
     method: "post",
@@ -16,7 +15,7 @@ export const createMasterVehicleAPI = (data: any) => {
   });
 };
 
-export const updateMasterVehicleAPI = (data: any) => {
+export const updateVehicleAPI = (data: any) => {
   return request({
     url: "/api/v1/master/vehicle",
     method: "put",

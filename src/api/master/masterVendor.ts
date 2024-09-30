@@ -1,25 +1,31 @@
 import request from "@/utils/request";
 
-export const getMasterVendorAPI = (params: any) => {
+export const getVendorAPI = () => {
   return request({
-    url: "/api/v1/master/vendor",
-    method: "get",
+    url: "/api/v1/vendor/list",
+    method: "get"
+  });
+};
+
+export const createVendorAPI = () => {
+  return request({
+    url: "/api/v1/vendor",
+    method: "post"
+  });
+};
+
+export const updateVendorAPI = (params: any) => {
+  return request({
+    url: "/api/v1/vendor",
+    method: "put",
     params,
   });
 };
 
-export const createMasterVendorAPI = (data: any) => {
+export const deleteVendorAPI = (data: any) => {
   return request({
-    url: "/api/v1/master/vendor",
-    method: "post",
-    data,
-  });
-};
-
-export const updateMasterVendorAPI = (data: any) => {
-  return request({
-    url: "/api/v1/master/vendor",
-    method: "put",
+    url: "/api/v1/vendor",
+    method: "delete",
     data,
   });
 };

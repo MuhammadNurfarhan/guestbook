@@ -23,6 +23,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     VehicleChart: typeof import('./components/charts/VehicleChart.vue')['default']
     VendorChart: typeof import('./components/charts/VendorChart.vue')['default']
+    VendorDialog: typeof import('./views/master/components/VendorDialog.vue')['default']
     VerticalHeader: typeof import('./layouts/internal/vertical-header/VerticalHeader.vue')['default']
     VerticalSidebar: typeof import('./layouts/internal/vertical-sidebar/VerticalSidebar.vue')['default']
     VisitorChart: typeof import('./components/charts/VisitorChart.vue')['default']

@@ -1,14 +1,13 @@
 import request from "@/utils/request";
 
-export const getMasterDestinateAPI = (params: any) => {
+export const getDestinateAPI = () => {
   return request({
-    url: "/api/v1/master/destinate",
+    url: "/api/v1/destinate/list",
     method: "get",
-    params,
   });
 };
 
-export const createMasterDestinateAPI = (data: any) => {
+export const createDestinateAPI = (data: any) => {
   return request({
     url: "/api/v1/master/destinate",
     method: "post",
@@ -16,7 +15,7 @@ export const createMasterDestinateAPI = (data: any) => {
   });
 };
 
-export const updateMasterDestinateAPI = (data: any) => {
+export const updateDestinateAPI = (data: any) => {
   return request({
     url: "/api/v1/master/destinate",
     method: "put",

@@ -1,14 +1,13 @@
 import request from "@/utils/request";
 
-export const getMasterPurposeAPI = (params: any) => {
+export const getPurposeAPI = () => {
   return request({
-    url: "/api/v1/master/purpose",
+    url: "/api/v1/purpose/list",
     method: "get",
-    params,
   });
 };
 
-export const createMasterPurposeAPI = (data: any) => {
+export const createPurposeAPI = (data: any) => {
   return request({
     url: "/api/v1/master/purpose",
     method: "post",
@@ -16,7 +15,7 @@ export const createMasterPurposeAPI = (data: any) => {
   });
 };
 
-export const updateMasterPurposeAPI = (data: any) => {
+export const updatePurposeAPI = (data: any) => {
   return request({
     url: "/api/v1/master/purpose",
     method: "put",

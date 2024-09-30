@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import AddVendorDialog from './components/AddVendorDialog.vue';
 import { useLoading } from '../../hooks';
+import { getVendorAPI, createVendorAPI, updateVendorAPI, deleteVendorAPI } from '@/api/master/masterVendor';
 
 interface Vendor {
   vendor_id: string;
@@ -10,9 +9,9 @@ interface Vendor {
   vendor_desc: string;
 }
 
-const showDialog = ref(false);
+const showDialog = ref<boolean>(false);
 const vendors = ref<Vendor[]>([]);
-const editMode = ref(false);
+const editMode = ref<boolean>(false);
 const editedVendor = ref<Vendor | null>(null);
 const deleteDialog = ref(false);
 const deleting = ref(false);
@@ -28,8 +27,8 @@ const tableHeaders = [
 const getVendors = async () => {
   showLoading();
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vendor`);
-    vendors.value = response.data.data;
+    const response = await getVendorAPI();
+    vendors.value = response.data;
   } catch (error) {
     console.error('Error fetching vendors:', error);
     showSnackbar('Failed to fetch vendors', 'error');
@@ -38,13 +37,15 @@ const getVendors = async () => {
   }
 };
 
-const saveVendor = async (vendorData: Vendor) => {
+const saveVendor = async () => {
   try {
     if (editMode.value) {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/vendor/${vendorData.vendor_id}`, vendorData);
+      const res = await updateVendorAPI(editedVendor.value?.vendor_id);
+      editedVendor.value = res.data;
       showSnackbar('Vendor updated successfully!', 'success');
     } else {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor`, vendorData);
+      const res = await createVendorAPI();
+      editedVendor.value = res.data;
       showSnackbar('Vendor added successfully!', 'success');
     }
     await getVendors();
@@ -77,10 +78,8 @@ const deleteVendor = async () => {
 
   deleting.value = true;
   try {
-    const token = localStorage.getItem('token');
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/vendor/${editedVendor.value.vendor_id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await deleteVendorAPI(editedVendor.value.vendor_id);
+    editedVendor.value = res.data;
     await getVendors();
     deleteDialog.value = false;
     showSnackbar('Vendor deleted successfully', 'success');
@@ -96,7 +95,9 @@ const showSnackbar = (text: string, color: string) => {
   snackbar.value = { show: true, text, color };
 };
 
-onMounted(getVendors);
+onMounted(() => {
+  getVendors();
+});
 </script>
 
 <template>
@@ -104,7 +105,7 @@ onMounted(getVendors);
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <span class="text-h5">Vendor List</span>
-        <v-btn color="primary" @click="showDialog = true" prepend-icon="mdi-plus">
+        <v-btn color="primary" @click="() => { editMode = false; editedVendor = null; showDialog = true; }" prepend-icon="mdi-plus">
           Create
         </v-btn>
       </v-card-title>
@@ -129,7 +130,7 @@ onMounted(getVendors);
     </v-card>
 
     <!-- Vendor Dialog -->
-    <AddVendorDialog
+    <VendorDialog
       v-model:show="showDialog"
       :editMode="editMode"
       :editedVendor="editedVendor"

@@ -1,52 +1,93 @@
 <template>
   <Parent-card title="Visitor Form" v-loading="loading">
-    <v-row>
-      <v-col cols="4">
-        <v-text-field label="Visitor Name" v-model="formData.visit_name" variant="outlined" />
-        <v-select :items="vendorNames" label="Vendor Name" v-model="formData.vendor_id" variant="outlined" />
-        <v-select :items="vehicleTypes" label="Vehicle Type" v-model="formData.vehicle_id" variant="outlined" />
-        <v-text-field label="Police Number" v-model="formData.policeNumber" variant="outlined" />
-      </v-col>
+    <v-form ref="form" :model="formData">
+      <v-row>
+        <v-col cols="4">
+          <v-text-field label="Visitor Name" v-model="formData.visit_name" variant="outlined" :rules="[rules.required]" />
+          <v-select
+            v-model="formData.selectedVendor"
+            :items="vendors"
+            item-title="vendor_name"
+            item-value="vendor_id"
+            label="Vendor Name"
+            variant="outlined"
+            :rules="[rules.required]"
+          />
+          <v-select
+            v-model="formData.selectedVehicle"
+            :items="vehicles"
+            item-title="vehicle_name"
+            item-value="vehicle_id"
+            label="Vehicle Type"
+            variant="outlined"
+            :rules="[rules.required]"
+          />
+          <v-text-field label="Police Number" v-model="formData.vehicle_no" variant="outlined" :rules="[rules.required]" />
+        </v-col>
 
-      <v-col cols="4">
-        <v-text-field label="Driver Name" v-model="formData.driverName" variant="outlined" />
-        <v-select :items="idTypes" label="ID Type" v-model="formData.identitas_id" variant="outlined" />
-        <v-text-field label="ID Number" v-model="formData.identitas_no" variant="outlined" />
-        <v-select :items="destinateBuildings" label="Destination Building" v-model="formData.destinate_id" variant="outlined" />
-        <v-text-field label="Destination PIC" v-model="formData.destinate_pic" variant="outlined" />
-        <v-select :items="visitorPurposes" label="Visitor Purpose" v-model="formData.purpose_id" variant="outlined" />
-        <v-text-field label="Notes" v-model="formData.remarks" variant="outlined" />
-      </v-col>
+        <v-col cols="4">
+          <v-text-field label="Driver Name" v-model="formData.driver_name" variant="outlined" :rules="[rules.required]" />
+          <v-select
+            v-model="formData.selectedIdType"
+            :items="idTypes"
+            item-title="identitas_name"
+            item-value="identitas_id"
+            label="ID Type"
+            variant="outlined"
+            :rules="[rules.required]"
+          />
+          <v-text-field label="ID Number" v-model="formData.identitas_no" variant="outlined" :rules="[rules.required]" />
+          <v-select
+            v-model="formData.selectedDestinateBuilding"
+            :items="destinateBuildings"
+            item-title="destinate_name"
+            item-value="destinate_id"
+            label="Destination Building"
+            variant="outlined"
+            :rules="[rules.required]" />
+          <v-text-field label="Destination PIC" v-model="formData.destinate_pic" variant="outlined" :rules="[rules.required]" />
+          <v-select
+            v-model="formData.selectedVisitorPurpose"
+            :items="visitorPurposes"
+            item-title="purpose_name"
+            item-value="purpose_id"
+            label="Visitor Purpose"
+            variant="outlined"
+            :rules="[rules.required]"
+          />
+          <v-text-field label="Notes" v-model="formData.remarks" variant="outlined" />
+        </v-col>
 
-      <v-col cols="4">
-        <!-- Button to Open Camera for Checkout -->
-        <v-btn color="green" @click="openCameraForCheckout">Checkout with QR Code</v-btn>
+        <v-col cols="4">
+          <!-- Button to Open Camera for Checkout -->
+          <v-btn color="green" @click="openCameraForCheckout">Checkout with QR Code</v-btn>
 
-        <!-- QR Code Reader, visible only when `cameraOpen` is true -->
-        <div v-if="cameraOpen" style="border: 2px solid black; margin-top: 10px;">
-          <p style="color: red">{{ error }}</p>
-          <p>Last result: <b>{{ result }}</b></p>
-          <qrcode-stream @detect="onDetect" @error="onError" />
-        </div>
+          <!-- QR Code Reader, visible only when `cameraOpen` is true -->
+          <div v-if="cameraOpen" style="border: 2px solid black; margin-top: 10px;">
+            <p style="color: red">{{ error }}</p>
+            <p>Last result: <b>{{ result }}</b></p>
+            <qrcode-stream @detect="onDetect" @error="onError" />
+          </div>
 
-        <!-- QR Code Display -->
-        <div v-if="qrCodeUrl">
-          <h2>Visitor QR Code</h2>
-          <p v-if="result">Scanned Visit Number: {{ result }}</p>
-          <p v-if="error" style="color: red">{{ error }}</p>
-          <img :src="qrCodeUrl" alt="Visitor QR Code" />
-        </div>
-      </v-col>
-    </v-row>
+          <!-- QR Code Display -->
+          <div v-if="qrCodeUrl">
+            <h2>Visitor QR Code</h2>
+            <p v-if="result">Scanned Visit Number: {{ result }}</p>
+            <p v-if="error" style="color: red">{{ error }}</p>
+            <img :src="qrCodeUrl" alt="Visitor QR Code" />
+          </div>
+        </v-col>
+      </v-row>
 
-    <v-row class="mb-5">
-      <v-col cols="6">
-        <v-btn v-if="isEditing" class="mr-4" color="primary" @click="updateVisitorData">Update</v-btn>
-        <v-btn v-if="isEditing" class="mr-4" color="red" @click="cancelEdit">Cancel</v-btn>
-        <v-btn v-else class="mr-4" color="primary" @click="saveVisitorData">Submit</v-btn>
-        <v-btn variant="outlined" @click="getVisitorData">Refresh</v-btn>
-      </v-col>
-    </v-row>
+      <v-row class="mb-5">
+        <v-col cols="6">
+          <v-btn v-if="isEditing" class="mr-4" color="primary" @click="updateVisitorData">Update</v-btn>
+          <v-btn v-if="isEditing" class="mr-4" color="red" @click="cancelEdit">Cancel</v-btn>
+          <v-btn v-else class="mr-4" color="primary" :disabled="!$refs.form" @click="submitVisitorData">Submit</v-btn>
+          <v-btn variant="outlined" @click="getVisitorData">Refresh</v-btn>
+        </v-col>
+      </v-row>
+    </v-form>
 
     <!-- Visitor Data -->
     <v-card flat>
@@ -76,15 +117,15 @@
             <td>{{ item.check_out }}</td>
             <td>{{ item.visit_no }}</td>
             <td>{{ item.visit_name }}</td>
-            <td>{{ item.vehicle_id }}</td>
-            <td>{{ item.policeNumber }}</td>
-            <td>{{ item.driverName }}</td>
-            <td>{{ item.identitas_id }}</td>
+            <td>{{ item.vehicle_name }}</td>
+            <td>{{ item.vehicle_no }}</td>
+            <td>{{ item.driver_name }}</td>
+            <td>{{ item.identitas_name }}</td>
             <td>{{ item.identitas_no }}</td>
-            <td>{{ item.destinate_id }}</td>
+            <td>{{ item.destinate_name }}</td>
             <td>{{ item.destinate_pic }}</td>
-            <td>{{ item.vendor_id }}</td>
-            <td>{{ item.purpose_id }}</td>
+            <td>{{ item.vendor_name }}</td>
+            <td>{{ item.purpose_name }}</td>
             <td>{{ item.status }}</td>
             <td>{{ item.remarks }}</td>
 
@@ -115,24 +156,33 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import { QrcodeStream } from 'vue-qrcode-reader';
 import QRCode from 'qrcode';
-import { getVisitAPI } from "@/api/visit/visit";
+import { getVisitAPI, createVisitAPI, deleteVisitAPI, updateVisitAPI } from "@/api/visit/visit";
+import { getVendorAPI } from '@/api/master/masterVendor';
+import { getVehicleAPI } from '@/api/master/masterVehicle';
+import { getIdentityAPI } from '@/api/master/masterIdentity';
+import { getDestinateAPI } from '@/api/master/masterDestinate';
+import { getPurposeAPI } from '@/api/master/masterPurpose';
 import { useLoading } from '@/hooks';
 
 interface VisitorData {
   visit_no: string;
   visit_name: string;
-  vendor_id: null | string;
-  vehicle_id: null | string;
-  policeNumber: string;
-  driverName: string;
-  identitas_id: null | string;
+  vehicle_name: string;
+  identitas_name: string;
+  destinate_name: string;
+  vendor_name: string;
+  purpose_name: string;
+  selectedVendor: null | string;
+  selectedVehicle: null | string;
+  vehicle_no: string;
+  driver_name: string;
+  selectedIdType: null | string;
   identitas_no: string;
-  destinate_id: null | string;
+  selectedDestinateBuilding: null | string;
   destinate_pic: string;
-  purpose_id: null | string;
+  selectedVisitorPurpose: null | string;
   remarks: string;
   check_in: string;
   check_out: string;
@@ -147,15 +197,20 @@ interface DetectedCode {
 const formData = ref<VisitorData>({
   visit_no: '',
   visit_name: '',
-  vendor_id: null,
-  vehicle_id: null ,
-  policeNumber: '',
-  driverName: '',
-  identitas_id: null,
+  vehicle_name: '',
+  identitas_name: '',
+  destinate_name: '',
+  vendor_name: '',
+  purpose_name: '',
+  selectedVendor: null,
+  selectedVehicle: null ,
+  vehicle_no: '',
+  driver_name: '',
+  selectedIdType: null,
   identitas_no: '',
-  destinate_id: null,
+  selectedDestinateBuilding: null,
   destinate_pic: '',
-  purpose_id: null,
+  selectedVisitorPurpose: null,
   remarks: '',
   check_in: '',
   check_out: '',
@@ -167,12 +222,12 @@ const headers = ref([
   { title: 'Checkout', key: 'check_out' },
   { title: 'Visit Number', key: 'visit_no' },
   { title: 'Visitor Name', key: 'visit_name' },
-  { title: 'Vehicle Type', key: 'vehicle_id' },
-  { title: 'Police Number', key: 'policeNumber' },
-  { title: 'Driver Name', key: 'driverName' },
-  { title: 'ID Type', key: 'identitas_id' },
+  { title: 'Vehicle Type', key: 'vehicle_name' },
+  { title: 'Police Number', key: 'vehicle_no' },
+  { title: 'Driver Name', key: 'driver_name' },
+  { title: 'ID Type', key: 'identitas_name' },
   { title: 'ID Number', key: 'identitas_no' },
-  { title: 'Destination Building', key: 'destinate_id' },
+  { title: 'Destination Building', key: 'destinate_name' },
   { title: 'Destination PIC', key: 'destinate_pic' },
   { title: 'Vendor Name', key: 'vendor_id' },
   { title: 'Visitor Purpose', key: 'purpose_id' },
@@ -183,58 +238,46 @@ const headers = ref([
 
 const visitorData = ref<VisitorData[]>([]);
 const search = ref('');
-const vendorNames = ref([]);
-const vehicleTypes = ref([]);
+const vendors = ref([]);
+const vehicles = ref([]);
 const idTypes = ref([]);
 const destinateBuildings = ref([]);
 const visitorPurposes = ref([]);
 const isEditing = ref(false);
 const snackbar = ref({ show: false, message: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
+const rules = {
+  required: (value: string) => !!value || 'Field is required',
+};
 
 const result = ref('');
 const error = ref('');
 const qrCodeUrl = ref<string | null>(null);
 const cameraOpen = ref(false);
 
-// Helper to handle API calls
-const apiRequest = async (url: string, method = 'get', data: VisitorData | null = null) => {
-  const token = localStorage.getItem('token');
-  const config = { headers: { Authorization: `Bearer ${token}` } };
-
+// Fetch dropdown options (vendor, vehicle, idtype, destination, purposes)
+const fetchDropdownOptions = async () => {
   try {
-    if (method === 'get') return await axios.get(url, config);
-    if (method === 'post') return await axios.post(url, data, config);
-    if (method === 'put') return await axios.put(url, data, config);
+    const vendorResponse = await getVendorAPI();
+    console.log(vendorResponse.data);
+    vendors.value = vendorResponse.data;
+    const vehicleResponse = await getVehicleAPI();
+    vehicles.value = vehicleResponse.data;
+    const idTypeResponse = await getIdentityAPI();
+    idTypes.value = idTypeResponse.data;
+    const destinateBuildingResponse = await getDestinateAPI();
+    destinateBuildings.value = destinateBuildingResponse.data;
+    const visitorPurposeResponse = await getPurposeAPI();
+    visitorPurposes.value = visitorPurposeResponse.data;
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'An error occurred. Please try again.';
-    return null;
+    error.value = err.response?.data?.message || 'An error occurred. Please try again.(error)';
   }
 };
 
-// Fetch dropdown options (vendor, vehicle, id, destination, purposes)
-const fetchDropdownOptions = async () => {
-  const vendors = await apiRequest(`${import.meta.env.VITE_API_URL}/api/vendor`);
-  vendorNames.value = vendors?.data?.map((vendor: { vendor_name: string }) => vendor.vendor_name) || [];
-
-  const vehicles = await apiRequest(`${import.meta.env.VITE_API_URL}/api/vehicle`);
-  vehicleTypes.value = vehicles?.data?.map((vehicle: { Vehicle_name: string }) => vehicle.Vehicle_name) || [];
-
-  const ids = await apiRequest(`${import.meta.env.VITE_API_URL}/api/identitas`);
-  idTypes.value = ids?.data?.map((id: { Identitas_name: string }) => id.Identitas_name) || [];
-
-  const buildings = await apiRequest(`${import.meta.env.VITE_API_URL}/api/destinate`);
-  destinateBuildings.value = buildings?.data?.map((building: { Destinate_name: string }) => building.Destinate_name) || [];
-
-  const purposes = await apiRequest(`${import.meta.env.VITE_API_URL}/api/purpose`);
-  visitorPurposes.value = purposes?.data?.map((purpose: { Purpose_name: string }) => purpose.Purpose_name) || [];
-};
-
 // Submit visitor data
-const saveVisitorData = async () => {
-  formData.value.visit_no = `VISIT_${Date.now()}`;
-  formData.value.check_in = new Date().toLocaleString();
-  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor`, 'post', formData.value);
+const submitVisitorData = async () => {
+  const res = await createVisitAPI(formData.value);
+  formData.value = res.data;
 
   if (res) {
     await QRCode.toDataURL(formData.value.visit_no)
@@ -266,9 +309,21 @@ const getVisitorData = async () => {
 // QR code scan for checkout
 const onDetect = async (data: DetectedCode) => {
   result.value = data.rawValue;
-  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${result.value}/checkout`, 'put');
 
-  if (res) getVisitorData();
+  const payload = {
+    visit_no: result.value,
+    status: 'checked_out',
+    checkout_time: new Date().toISOString()
+  };
+
+  const res = await updateVisitAPI(payload);
+
+  if (res) {
+    getVisitorData();
+    showSnackbar('Checkout successful', 'success');
+  } else {
+    showSnackbar('Checkout failed', 'error');
+  }
 };
 
 // QR code scan error
@@ -289,22 +344,40 @@ const editVisitor = (item: VisitorData) => {
 
 const deleteVisitor = async (visit_no: string) => {
   if (confirm('Are you sure you want to delete this visitor?')) {
-    const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visitor/${visit_no}`, 'delete');
+    const res = await deleteVisitAPI(visit_no);
     if (res) getVisitorData(); // Refresh the data after successful deletion
   }
 };
 
 // Checkout visitor by visit number
 const checkoutVisitor = async (visit_no: string) => {
-  const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${visit_no}`, 'put');
-  if (res) getVisitorData(); // Refresh the data after successful checkout
+  try {
+    const payload = {
+      visit_no: visit_no,
+      status: 'checked_out',
+      checkout_time: new Date().toISOString()
+    }
+
+    const res = await updateVisitAPI(payload);
+
+    if (res) {
+      getVisitorData();
+      showSnackbar('Checkout berhasil', 'success');
+    } else {
+      showSnackbar('Checkout gagal', 'error');
+    }
+  } catch (error) {
+    console.error('Error saat checkout:', error);
+  }
 };
 
 // Function to update visitor data
 const updateVisitorData = async () => {
   try {
-    const res = await apiRequest(`${import.meta.env.VITE_API_URL}/api/visit/${formData.value.visit_no}`, 'put', formData.value);
+    const res = await updateVisitAPI(formData.value.visit_no);
+
     if (res) {
+      formData.value = res.data;
       showSnackbar('Visitor updated successfully!', 'success');
       getVisitorData();
       cancelEdit();
@@ -321,15 +394,20 @@ const cancelEdit = () => {
   formData.value = {
     visit_no: '',
     visit_name: '',
-    vendor_id: null,
-    vehicle_id: null,
-    policeNumber: '',
-    driverName: '',
-    identitas_id: null,
+    vendor_name: '',
+    vehicle_name: '',
+    identitas_name: '',
+    destinate_name: '',
+    purpose_name: '',
+    selectedVendor: null,
+    selectedVehicle: null ,
+    vehicle_no: '',
+    driver_name: '',
+    selectedIdType: null,
     identitas_no: '',
-    destinate_id: null,
+    selectedDestinateBuilding: null,
     destinate_pic: '',
-    purpose_id: null,
+    selectedVisitorPurpose: null,
     remarks: '',
     check_in: '',
     check_out: '',
@@ -343,8 +421,8 @@ const showSnackbar = (message: string, color: string) => {
 };
 
 onMounted(async () => {
-  await fetchDropdownOptions();
   await getVisitorData();
+  await fetchDropdownOptions();
 });
 
 onBeforeMount(() => {
