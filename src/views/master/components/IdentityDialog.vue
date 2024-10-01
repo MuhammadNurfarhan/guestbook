@@ -4,42 +4,42 @@ import { defineProps, ref, watch } from 'vue';
 const props = defineProps<{
   show: boolean;
   editMode: boolean;
-  editedVendor: Vendor | null;
+  editedIdentity: Identity | null;
 }>();
 
-interface Vendor {
-  vendor_id: string;
-  vendor_name: string;
-  vendor_desc: string;
+interface Identity {
+  identitas_id: string;
+  identitas_name: string;
+  identitas_desc: string;
 }
 
-const localVendor = ref<Vendor>({
-  vendor_id: '',
-  vendor_name: '',
-  vendor_desc: '',
+const localIdentity = ref<Identity>({
+  identitas_id: '',
+  identitas_name: '',
+  identitas_desc: '',
 });
 
-const dialogTitle = ref('Create Vendor');
+const dialogTitle = ref('Create Identity');
 const emit = defineEmits(['save', 'cancel']);
 
 watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Vendor' : 'Create Vendor';
+  dialogTitle.value = newVal ? 'Edit Identity' : 'Create Identity';
 });
 
-watch(() => props.editedVendor, (newVendor) => {
-  if (newVendor) {
-    localVendor.value = { ...newVendor };
+watch(() => props.editedIdentity, (newIdentity) => {
+  if (newIdentity) {
+    localIdentity.value = { ...newIdentity };
   } else {
-    localVendor.value = {
-      vendor_id: '',
-      vendor_name: '',
-      vendor_desc: '',
+    localIdentity.value = {
+      identitas_id: '',
+      identitas_name: '',
+      identitas_desc: '',
     };
   }
 });
 
 const save = () => {
-  emit('save', localVendor.value);
+  emit('save', localIdentity.value);
 };
 
 const cancel = () => {
@@ -55,13 +55,13 @@ const cancel = () => {
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localVendor.vendor_name"
-            label="Vendor Name"
+            v-model="localIdentity.identitas_name"
+            label="Identity Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localVendor.vendor_desc"
+            v-model="localIdentity.identitas_desc"
             label="Description"
             variant="outlined"
             rows="2"

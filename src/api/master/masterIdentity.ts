@@ -1,6 +1,5 @@
 import request from "@/utils/request";
 
-
 export const getIdentityAPI = () => {
   return request({
     url: "/api/v1/identitas/list",
@@ -10,16 +9,23 @@ export const getIdentityAPI = () => {
 
 export const createIdentityAPI = (data: any) => {
   return request({
-    url: "/api/v1/master/identity",
+    url: "/api/v1/identitas",
     method: "post",
     data,
   });
 };
 
-export const updateIdentityAPI = (data: any) => {
+export const updateIdentityAPI = (identitas_id: string, data: any) => {
   return request({
-    url: "/api/v1/master/identity",
+    url: `/api/v1/identitas/${identitas_id}`,
     method: "put",
-    data,
+    data
+  });
+};
+
+export const deleteIdentityAPI = (identitas_id: string) => {
+  return request({
+    url: `/api/v1/identitas/${identitas_id}`,
+    method: "delete",
   });
 };

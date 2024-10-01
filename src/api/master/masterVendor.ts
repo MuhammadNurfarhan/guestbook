@@ -7,25 +7,25 @@ export const getVendorAPI = () => {
   });
 };
 
-export const createVendorAPI = () => {
+export const createVendorAPI = (data: any) => {
   return request({
     url: "/api/v1/vendor",
-    method: "post"
+    method: "post",
+    data
   });
 };
 
-export const updateVendorAPI = (params: any) => {
+export const updateVendorAPI = (vendor_id: string, data: any) => {
   return request({
-    url: "/api/v1/vendor",
+    url: `/api/v1/vendor/${vendor_id}`,
     method: "put",
-    params,
+    data
   });
 };
 
-export const deleteVendorAPI = (data: any) => {
+export const deleteVendorAPI = (vendor_id: string) => {
   return request({
-    url: "/api/v1/vendor",
+    url: `/api/v1/vendor/${vendor_id}`,
     method: "delete",
-    data,
   });
 };

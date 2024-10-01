@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
-import axios from 'axios';
-import AddVehicleDialog from './components/AddVehicleDialog.vue';
+import { ref, onMounted } from 'vue';
 import { useLoading } from '../../hooks';
+import { getVehicleAPI, createVehicleAPI, updateVehicleAPI, deleteVehicleAPI } from '@/api/master/masterVehicle';
 
 interface Vehicle {
   vehicle_id: string;
@@ -10,19 +9,14 @@ interface Vehicle {
   vehicle_desc: string;
 }
 
-const showDialog = ref(false);
-const deleteDialog = ref(false);
 const vehicles = ref<Vehicle[]>([]);
-const editMode = ref(false);
-const editedItem = ref<Vehicle | null>(null);
-const itemToDelete = ref<Vehicle | null>(null);
+const editMode = ref<boolean>(false);
+const editedVehicle = ref<Vehicle | null>(null);
+const showDialog = ref<boolean>(false);
+const deleteDialog = ref<boolean>(false);
+const deleting = ref<boolean>(false);
+const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
-
-const snackbar = reactive({
-  show: false,
-  text: '',
-  color: '',
-});
 
 const tableHeaders = [
   { title: 'Vehicle Name', key: 'vehicle_name' },
@@ -33,8 +27,8 @@ const tableHeaders = [
 const getVehicleTypes = async () => {
   showLoading();
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vehicle`);
-    vehicles.value = response.data.data;
+    const response = await getVehicleAPI();
+    vehicles.value = response.data;
   } catch (error) {
     console.error('Error fetching vehicle types:', error);
     showSnackbar('Error fetching vehicle types', 'error');
@@ -43,13 +37,13 @@ const getVehicleTypes = async () => {
   }
 };
 
-const saveVehicleType = async (vehicleData: Vehicle) => {
+const saveVehicleType = async (payload: Vehicle) => {
   try {
-    if (editMode.value) {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/vehicle/${vehicleData.vehicle_id}`, vehicleData);
+    if (editMode.value && editedVehicle.value) {
+      await updateVehicleAPI(editedVehicle.value.vehicle_id, payload);
       showSnackbar('Vehicle type updated successfully!', 'success');
     } else {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/vehicle`, vehicleData);
+      await createVehicleAPI(payload);
       showSnackbar('Vehicle type added successfully!', 'success');
     }
     await getVehicleTypes();
@@ -60,88 +54,88 @@ const saveVehicleType = async (vehicleData: Vehicle) => {
   }
 };
 
-const editVehicleType = (item: Vehicle) => {
+const createVehicle = () => {
+  editMode.value = false;
+  showDialog.value = true;
+  editedVehicle.value = {
+    vehicle_name: '',
+    vehicle_desc: '',
+  };
+}
+
+const handleCancel = () => {
+  showDialog.value = false;
+  editMode.value = false;
+  editedVehicle.value = null;
+};
+
+const editVehicleType = (vehicle: Vehicle) => {
   editMode.value = true;
-  editedItem.value = { ...item };
+  editedVehicle.value = { ...vehicle };
   showDialog.value = true;
 };
 
-const confirmDelete = (item: Vehicle) => {
-  itemToDelete.value = item;
+const confirmDelete = (vehicle: Vehicle) => {
+  deleting.value = vehicle;
   deleteDialog.value = true;
 };
 
 const deleteVehicleType = async () => {
-  if (!itemToDelete.value) return;
+  if (!deleting.value) return;
 
   try {
-    const token = localStorage.getItem('token');
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/vehicle/${itemToDelete.value.vehicle_id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await deleteVehicleAPI(deleting.value.vehicle_id);
     await getVehicleTypes();
+    deleteDialog.value = false;
     showSnackbar('Vehicle type deleted successfully!', 'success');
   } catch (error) {
     console.error('Error deleting vehicle type:', error);
     showSnackbar('Error deleting vehicle type', 'error');
   } finally {
-    deleteDialog.value = false;
-    itemToDelete.value = null;
+    deleting.value = null;
   }
 };
 
-const handleCancel = () => {
-  showDialog.value = false;
-  editMode.value = false;
-  editedItem.value = null;
-};
-
 const showSnackbar = (text: string, color: string) => {
-  snackbar.text = text;
-  snackbar.color = color;
-  snackbar.show = true;
+  snackbar.value = { show: true, text, color };
 };
 
-onMounted(getVehicleTypes);
+onMounted(() => {
+  getVehicleTypes
+});
 </script>
 
 <template>
   <ParentCard title="Vehicles" v-loading="loading">
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span class="text-h5">Vehicle Type List</span>
-            <v-btn color="primary" @click="showDialog = true" prepend-icon="mdi-plus">
-              Create
-            </v-btn>
-          </v-card-title>
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span class="text-h5">Vehicle Type List</span>
+        <v-btn color="primary" @click="createVehicle" prepend-icon="mdi-plus">
+          Create
+        </v-btn>
+      </v-card-title>
 
-          <v-card-text>
-            <v-data-table
-              :headers="tableHeaders"
-              :items="vehicles"
-              :loading="loading"
-              class="elevation-1"
-            >
-              <template v-slot:item.actions="{ item }">
-                <v-btn icon @click="editVehicleType(item)" color="primary">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon @click="confirmDelete(item)" color="error">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </template>
-            </v-data-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+      <v-data-table
+        :headers="tableHeaders"
+        :items="vehicles"
+        :loading="loading"
+        class="elevation-1"
+      >
+        <template v-slot:item.actions="{ item }">
+          <v-btn icon @click="editVehicleType(item)" color="primary">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon @click="confirmDelete(item)" color="error">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-card>
 
-    <AddVehicleDialog
+    <VehicleDialog
       v-model:show="showDialog"
       :editMode="editMode"
-      :editedItem="editedItem"
+      :editedVehicle="editedVehicle"
       @save="saveVehicleType"
       @cancel="handleCancel"
     />
@@ -149,6 +143,7 @@ onMounted(getVehicleTypes);
     <v-dialog v-model="deleteDialog" max-width="500px">
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
+        <v-divider />
         <v-card-text>Are you sure you want to delete this vehicle type?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -166,3 +161,4 @@ onMounted(getVehicleTypes);
     </v-snackbar>
   </ParentCard>
 </template>
+

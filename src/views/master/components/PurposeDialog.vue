@@ -4,42 +4,42 @@ import { defineProps, ref, watch } from 'vue';
 const props = defineProps<{
   show: boolean;
   editMode: boolean;
-  editedVendor: Vendor | null;
+  editedPurpose: Purpose | null;
 }>();
 
-interface Vendor {
-  vendor_id: string;
-  vendor_name: string;
-  vendor_desc: string;
+interface Purpose {
+  purpose_id: string;
+  purpose_name: string;
+  purpose_desc: string;
 }
 
-const localVendor = ref<Vendor>({
-  vendor_id: '',
-  vendor_name: '',
-  vendor_desc: '',
+const localPurpose = ref<Purpose>({
+  purpose_id: '',
+  purpose_name: '',
+  purpose_desc: '',
 });
 
-const dialogTitle = ref('Create Vendor');
+const dialogTitle = ref('Create Purpose');
 const emit = defineEmits(['save', 'cancel']);
 
 watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Vendor' : 'Create Vendor';
+  dialogTitle.value = newVal ? 'Edit Purpose' : 'Create Purpose';
 });
 
-watch(() => props.editedVendor, (newVendor) => {
-  if (newVendor) {
-    localVendor.value = { ...newVendor };
+watch(() => props.editedPurpose, (newPurpose) => {
+  if (newPurpose) {
+    localPurpose.value = { ...newPurpose };
   } else {
-    localVendor.value = {
-      vendor_id: '',
-      vendor_name: '',
-      vendor_desc: '',
+    localPurpose.value = {
+      purpose_id: '',
+      purpose_name: '',
+      purpose_desc: '',
     };
   }
 });
 
 const save = () => {
-  emit('save', localVendor.value);
+  emit('save', localPurpose.value);
 };
 
 const cancel = () => {
@@ -55,13 +55,13 @@ const cancel = () => {
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localVendor.vendor_name"
-            label="Vendor Name"
+            v-model="localPurpose.purpose_name"
+            label="Purpose Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localVendor.vendor_desc"
+            v-model="localPurpose.purpose_desc"
             label="Description"
             variant="outlined"
             rows="2"

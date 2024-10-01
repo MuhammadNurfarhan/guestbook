@@ -233,7 +233,7 @@ const headers = ref([
   { title: 'Visitor Purpose', key: 'purpose_id' },
   { title: 'Status', key: 'status' },
   { title: 'Remarks', key: 'remarks' },
-  { title: 'Actions', key: 'actions' },
+  { title: 'Actions', key: 'actions', sortable: false },
 ]);
 
 const visitorData = ref<VisitorData[]>([]);

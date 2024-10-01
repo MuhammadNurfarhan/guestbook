@@ -9,16 +9,23 @@ export const getPurposeAPI = () => {
 
 export const createPurposeAPI = (data: any) => {
   return request({
-    url: "/api/v1/master/purpose",
+    url: "/api/v1/purpose",
     method: "post",
-    data,
+    data
   });
 };
 
-export const updatePurposeAPI = (data: any) => {
+export const updatePurposeAPI = (purpose_id: string, data: any) => {
   return request({
-    url: "/api/v1/master/purpose",
+    url: `/api/v1/purpose/${purpose_id}`,
     method: "put",
-    data,
+    data
+  });
+};
+
+export const deletePurposeAPI = (purpose_id: string) => {
+  return request({
+    url: `/api/v1/purpose/${purpose_id}`,
+    method: "delete",
   });
 };

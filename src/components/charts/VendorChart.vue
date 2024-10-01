@@ -7,7 +7,7 @@
 <script lang="ts">
 import { ref, onMounted, defineComponent } from 'vue';
 import * as echarts from 'echarts';
-import axios from 'axios';
+import { getVendorAPI } from '@/api/master/masterVendor';
 
 export default defineComponent({
   name: 'VendorChart',
@@ -17,8 +17,8 @@ export default defineComponent({
 
     const fetchVendorData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vendor`); // API endpoint
-        const data = response.data.data;
+        const res = await getVendorAPI() // API endpoint
+        const data = res.data;
 
         const vendorNames = data.map((vendor: any) => vendor.vendor_name);
 

@@ -4,42 +4,42 @@ import { defineProps, ref, watch } from 'vue';
 const props = defineProps<{
   show: boolean;
   editMode: boolean;
-  editedVendor: Vendor | null;
+  editedDestinate: Destinate | null;
 }>();
 
-interface Vendor {
-  vendor_id: string;
-  vendor_name: string;
-  vendor_desc: string;
+interface Destinate {
+  destinate_id: string;
+  destinate_name: string;
+  destinate_desc: string;
 }
 
-const localVendor = ref<Vendor>({
-  vendor_id: '',
-  vendor_name: '',
-  vendor_desc: '',
+const localDestinate = ref<Destinate>({
+  destinate_id: '',
+  destinate_name: '',
+  destinate_desc: '',
 });
 
-const dialogTitle = ref('Create Vendor');
+const dialogTitle = ref('Create Destinate');
 const emit = defineEmits(['save', 'cancel']);
 
 watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Vendor' : 'Create Vendor';
+  dialogTitle.value = newVal ? 'Edit Destination' : 'Create Destination';
 });
 
-watch(() => props.editedVendor, (newVendor) => {
-  if (newVendor) {
-    localVendor.value = { ...newVendor };
+watch(() => props.editedDestinate, (newDestinate) => {
+  if (newDestinate) {
+    localDestinate.value = { ...newDestinate };
   } else {
-    localVendor.value = {
-      vendor_id: '',
-      vendor_name: '',
-      vendor_desc: '',
+    localDestinate.value = {
+      destinate_id: '',
+      destinate_name: '',
+      destinate_desc: '',
     };
   }
 });
 
 const save = () => {
-  emit('save', localVendor.value);
+  emit('save', localDestinate.value);
 };
 
 const cancel = () => {
@@ -55,13 +55,13 @@ const cancel = () => {
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localVendor.vendor_name"
-            label="Vendor Name"
+            v-model="localDestinate.destinate_name"
+            label="Destination Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localVendor.vendor_desc"
+            v-model="localDestinate.destinate_desc"
             label="Description"
             variant="outlined"
             rows="2"

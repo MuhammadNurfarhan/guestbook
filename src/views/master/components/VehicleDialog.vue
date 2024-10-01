@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import { defineProps, ref, watch } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 
 const props = defineProps<{
   show: boolean;
   editMode: boolean;
-  editedVendor: Vendor | null;
+  editedVehicle: Vehicle | null;
 }>();
 
-interface Vendor {
-  vendor_id: string;
-  vendor_name: string;
-  vendor_desc: string;
+interface Vehicle {
+  vehicle_id: string;
+  vehicle_name: string;
+  vehicle_desc: string;
 }
 
-const localVendor = ref<Vendor>({
-  vendor_id: '',
-  vendor_name: '',
-  vendor_desc: '',
+const localVehicle = ref<Vehicle>({
+  vehicle_id: '',
+  vehicle_name: '',
+  vehicle_desc: '',
 });
 
-const dialogTitle = ref('Create Vendor');
+const dialogTitle = ref('Create Vehicle Type');
 const emit = defineEmits(['save', 'cancel']);
 
 watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Vendor' : 'Create Vendor';
+  dialogTitle.value = newVal ? 'Edit Vehicle Type' : 'Create Vehicle Type';
 });
 
-watch(() => props.editedVendor, (newVendor) => {
-  if (newVendor) {
-    localVendor.value = { ...newVendor };
+watch(() => props.editedVehicle, (newVehicle) => {
+  if (newVehicle) {
+    localVehicle.value = { ...newVehicle };
   } else {
-    localVendor.value = {
-      vendor_id: '',
-      vendor_name: '',
-      vendor_desc: '',
+    localVehicle.value = {
+      vehicle_id: '',
+      vehicle_name: '',
+      vehicle_desc: '',
     };
   }
 });
 
 const save = () => {
-  emit('save', localVendor.value);
+  emit('save', localVehicle.value);
 };
 
 const cancel = () => {
@@ -55,13 +55,13 @@ const cancel = () => {
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localVendor.vendor_name"
-            label="Vendor Name"
+            v-model="localVehicle.vehicle_name"
+            label="Vehicle Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localVendor.vendor_desc"
+            v-model="localVehicle.vehicle_desc"
             label="Description"
             variant="outlined"
             rows="2"

@@ -4,17 +4,16 @@ import { useLoading } from '../../hooks';
 import { getVendorAPI, createVendorAPI, updateVendorAPI, deleteVendorAPI } from '@/api/master/masterVendor';
 
 interface Vendor {
-  vendor_id: string;
   vendor_name: string;
   vendor_desc: string;
 }
 
-const showDialog = ref<boolean>(false);
 const vendors = ref<Vendor[]>([]);
 const editMode = ref<boolean>(false);
 const editedVendor = ref<Vendor | null>(null);
-const deleteDialog = ref(false);
-const deleting = ref(false);
+const showDialog = ref<boolean>(false);
+const deleteDialog = ref<boolean>(false);
+const deleting = ref<boolean>(false);
 const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
 
@@ -37,15 +36,13 @@ const getVendors = async () => {
   }
 };
 
-const saveVendor = async () => {
+const saveVendor = async (payload: Vendor) => {
   try {
-    if (editMode.value) {
-      const res = await updateVendorAPI(editedVendor.value?.vendor_id);
-      editedVendor.value = res.data;
+    if (editMode.value && editedVendor.value) {
+      await updateVendorAPI(editedVendor.value.vendor_id, payload);
       showSnackbar('Vendor updated successfully!', 'success');
     } else {
-      const res = await createVendorAPI();
-      editedVendor.value = res.data;
+      await createVendorAPI(payload);
       showSnackbar('Vendor added successfully!', 'success');
     }
     await getVendors();
@@ -55,6 +52,15 @@ const saveVendor = async () => {
     showSnackbar('Failed to save vendor', 'error');
   }
 };
+
+const createVendor = () => {
+  editMode.value = false;
+  showDialog.value = true;
+  editedVendor.value = {
+    vendor_name: '',
+    vendor_desc: '',
+  };
+}
 
 const handleCancel = () => {
   showDialog.value = false;
@@ -68,7 +74,7 @@ const editVendor = (vendor: Vendor) => {
   showDialog.value = true;
 };
 
-const confirmDeleteVendor = (vendor: Vendor) => {
+const confirmDelete = (vendor: Vendor) => {
   editedVendor.value = vendor;
   deleteDialog.value = true;
 };
@@ -78,8 +84,7 @@ const deleteVendor = async () => {
 
   deleting.value = true;
   try {
-    const res = await deleteVendorAPI(editedVendor.value.vendor_id);
-    editedVendor.value = res.data;
+    await deleteVendorAPI(editedVendor.value.vendor_id);
     await getVendors();
     deleteDialog.value = false;
     showSnackbar('Vendor deleted successfully', 'success');
@@ -105,31 +110,28 @@ onMounted(() => {
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <span class="text-h5">Vendor List</span>
-        <v-btn color="primary" @click="() => { editMode = false; editedVendor = null; showDialog = true; }" prepend-icon="mdi-plus">
+        <v-btn color="primary" @click="createVendor" prepend-icon="mdi-plus">
           Create
         </v-btn>
       </v-card-title>
 
-      <v-card-text>
-        <v-data-table
-          :headers="tableHeaders"
-          :items="vendors"
-          :loading="loading"
-          class="elevation-1"
-        >
-          <template v-slot:item.actions="{ item }">
-            <v-btn icon small @click="editVendor(item)" class="mr-2">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn icon small @click="confirmDeleteVendor(item)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </template>
-        </v-data-table>
-      </v-card-text>
+      <v-data-table
+        :headers="tableHeaders"
+        :items="vendors"
+        :loading="loading"
+        class="elevation-1"
+      >
+        <template v-slot:item.actions="{ item }">
+          <v-btn icon small @click="editVendor(item)" class="mr-2" color="primary">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon small @click="confirmDelete(item)" color="error">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
     </v-card>
 
-    <!-- Vendor Dialog -->
     <VendorDialog
       v-model:show="showDialog"
       :editMode="editMode"
@@ -138,20 +140,19 @@ onMounted(() => {
       @cancel="handleCancel"
     />
 
-    <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="deleteDialog" max-width="400px">
       <v-card>
         <v-card-title>Confirm Delete</v-card-title>
+        <v-divider />
         <v-card-text>Are you sure you want to delete this vendor?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" @click="deleteVendor" :loading="deleting">Delete</v-btn>
-          <v-btn color="grey" @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn class="bg-error" @click="deleteVendor" :loading="deleting">Delete</v-btn>
+          <v-btn class="bg-grey" @click="deleteDialog = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Snackbar for notifications -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.text }}
       <template v-slot:actions>

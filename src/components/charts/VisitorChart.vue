@@ -7,7 +7,7 @@
 <script lang="ts">
 import { ref, onMounted, defineComponent } from 'vue';
 import * as echarts from 'echarts';
-import axios from 'axios';
+import { getVisitAPI } from '@/api/visit/visit';
 
 export default defineComponent({
   name: 'VisitorChart',
@@ -18,11 +18,12 @@ export default defineComponent({
     // Fetch visitor data from API
     const fetchVisitorData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/visit`); // API endpoint
-        const data = response.data.data;
+        const res = await getVisitAPI(new Date());
+        console.log(res); // API endpoint
+        const data = res.data;
 
-        const dates = data.map((item: any) => item.checkin_date);
-        const totalVisitors = data.map((item: any) => item.visit_count);
+        const dates = data.map((item: any) => item.check_in);
+        const totalVisitors = data.map((item: any) => item.visitor_count);
 
         // Configure chart options for line chart
         const chartOptions = {

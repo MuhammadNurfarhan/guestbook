@@ -1,183 +1,161 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import axios from 'axios';
-import AddDestinationDialog from './components/AddDestinationDialog.vue';
+import { ref, onMounted } from 'vue';
 import { useLoading } from '../../hooks';
+import { getDestinateAPI, createDestinateAPI, updateDestinateAPI, deleteDestinateAPI } from '@/api/master/masterDestinate';
 
-interface DestinationBuilding {
+interface Destinate {
   destinate_id: string;
   destinate_name: string;
   destinate_desc: string;
 }
 
-// State variables
-const showDialog = ref(false);
-const deleteDialog = ref(false);
-const destinationBuildings = ref<DestinationBuilding[]>([]);
-const editMode = ref(false);
-const editedItem = ref<DestinationBuilding | null>(null);
-const itemToDelete = ref<DestinationBuilding | null>(null);
+const destinates = ref<Destinate[]>([]);
+const editMode = ref<boolean>(false);
+const editedDestinate = ref<Destinate | null>(null);
+const showDialog = ref<boolean>(false);
+const deleteDialog = ref<boolean>(false);
+const deleting = ref<Destinate | null>(null);
+const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
 
-// Snackbar state
-const snackbar = reactive({
-  show: false,
-  text: '',
-  color: '',
-});
-
-// Table headers configuration
 const tableHeaders = [
   { title: 'Destination Building Name', key: 'destinate_name' },
   { title: 'Description', key: 'destinate_desc' },
   { title: 'Actions', key: 'actions', sortable: false },
 ];
 
-// Fetch destination buildings from API
-const getDestinationBuildings = async () => {
+const getDestinates = async () => {
   showLoading();
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/destinate`);
-    destinationBuildings.value = response.data.data;
+    const response = await getDestinateAPI();
+    destinates.value = response.data;
   } catch (error) {
-    showSnackbar('Error fetching destination buildings', 'error');
     console.error('Error fetching destination buildings:', error);
+    showSnackbar('Error fetching destination buildings', 'error');
   } finally {
     hideLoading();
   }
 };
 
-// Save destination building function
-const saveDestinationBuilding = async (destinationData: DestinationBuilding) => {
+const saveDestinate = async (payload: Destinate) => {
   try {
-    if (editMode.value) {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/destinate/${destinationData.destinate_id}`, destinationData);
+    if (editMode.value && editedDestinate.value) {
+      await updateDestinateAPI(editedDestinate.value.destinate_id, payload);
       showSnackbar('Destination building updated successfully!', 'success');
     } else {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/destinate`, destinationData);
+      await createDestinateAPI(payload);
       showSnackbar('Destination building added successfully!', 'success');
     }
-    await getDestinationBuildings();
+    await getDestinates();
     showDialog.value = false;
   } catch (error) {
-    showSnackbar('Error saving destination building', 'error');
     console.error('Error saving destination building:', error);
+    showSnackbar('Error saving destination building', 'error');
   }
 };
 
-// Open dialog to create a new destination building
-const openCreateDialog = () => {
+const createDestinate = () => {
   editMode.value = false;
-  editedItem.value = null;
   showDialog.value = true;
+  editedDestinate.value = {
+    destinate_name: '',
+    destinate_desc: '',
+  };
 };
 
-// Edit an existing destination building
-const editDestinationBuilding = (item: DestinationBuilding) => {
+const handleCancel = () => {
+  showDialog.value = false;
+  editMode.value = false;
+  editedDestinate.value = null;
+};
+
+const editDestinate = (destinate: Destinate) => {
   editMode.value = true;
-  editedItem.value = { ...item };
+  editedDestinate.value = { ...destinate };
   showDialog.value = true;
 };
 
 // Confirm delete action
-const confirmDelete = (item: DestinationBuilding) => {
-  itemToDelete.value = item;
+const confirmDelete = (destinate: Destinate) => {
+  deleting.value = destinate;
   deleteDialog.value = true;
 };
 
 // Delete destination building function
 const deleteDestinationBuilding = async () => {
-  if (!itemToDelete.value) return;
+  if (!deleting.value) return;
 
   try {
-    const token = localStorage.getItem('token');
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/destinate/${itemToDelete.value.destinate_id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    showSnackbar('Destination building deleted successfully!', 'success');
-    await getDestinationBuildings();
-  } catch (error) {
-    showSnackbar('Error deleting destination building', 'error');
-    console.error('Error deleting destination building:', error);
-  } finally {
+    await deleteDestinateAPI(deleting.value.destinate_id);
+    await getDestinates();
     deleteDialog.value = false;
-    itemToDelete.value = null;
+    showSnackbar('Destination building deleted successfully!', 'success');
+  } catch (error) {
+    console.error('Error deleting destination building:', error);
+    showSnackbar('Error deleting destination building', 'error');
+  } finally {
+    deleting.value = null;
   }
-};
-
-// Handle cancel action
-const handleCancel = () => {
-  showDialog.value = false;
-  editMode.value = false;
-  editedItem.value = null;
 };
 
 // Show snackbar with feedback
 const showSnackbar = (text: string, color: string) => {
-  snackbar.text = text;
-  snackbar.color = color;
-  snackbar.show = true;
+  snackbar.value = { show: true, text, color };
 };
 
-// Fetch destination buildings on component mount
-onMounted(getDestinationBuildings);
+onMounted(() => {
+  getDestinates();
+});
 </script>
 
 <template>
   <ParentCard title="Destination" v-loading="loading">
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span class="text-h5">Destination Building List</span>
-            <v-btn color="primary" @click="openCreateDialog" prepend-icon="mdi-plus">
-              Create
-            </v-btn>
-          </v-card-title>
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span class="text-h5">Destination Building List</span>
+        <v-btn color="primary" @click="createDestinate" prepend-icon="mdi-plus">
+          Create
+        </v-btn>
+      </v-card-title>
 
-          <v-card-text>
-            <v-data-table
-              :headers="tableHeaders"
-              :items="destinationBuildings"
-              :loading="loading"
-              class="elevation-1"
-            >
-              <template v-slot:item.actions="{ item }">
-                <v-btn icon @click="editDestinationBuilding(item)" color="primary">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon @click="confirmDelete(item)" color="error">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </template>
-            </v-data-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+      <v-data-table
+        :headers="tableHeaders"
+        :items="destinates"
+        :loading="loading"
+        class="elevation-1"
+      >
+        <template v-slot:item.actions="{ item }">
+          <v-btn icon @click="editDestinate(item)" class="mr-2" color="primary">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon @click="confirmDelete(item)" color="error">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-card>
 
-    <AddDestinationDialog
+    <DestinationDialog
       v-model:show="showDialog"
       :editMode="editMode"
-      :editedItem="editedItem"
-      @save="saveDestinationBuilding"
+      :editedDestinate="editedDestinate"
+      @save="saveDestinate"
       @cancel="handleCancel"
     />
 
-    <!-- Confirmation dialog for delete action -->
     <v-dialog v-model="deleteDialog" max-width="500px">
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
+        <v-divider />
         <v-card-text>Are you sure you want to delete this destination building?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" variant="text" @click="deleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="deleteDestinationBuilding">Delete</v-btn>
+          <v-btn class="bg-error" @click="deleteDestinationBuilding" :loading="deleting">Delete</v-btn>
+          <v-btn class="bg-grey" @click="deleteDialog = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Snackbar for feedback -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.text }}
       <template v-slot:actions>

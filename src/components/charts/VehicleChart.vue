@@ -7,7 +7,7 @@
 <script lang="ts">
 import { ref, onMounted, defineComponent } from 'vue';
 import * as echarts from 'echarts';
-import axios from 'axios';
+import { getVehicleAPI } from '@/api/master/masterVehicle';
 
 export default defineComponent({
   name: 'VehicleChart',
@@ -18,11 +18,11 @@ export default defineComponent({
     // Fetch vehicle data from API
     const fetchVehicleData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vehicle`);
-        const data = response.data.data;
+        const res = await getVehicleAPI();
+        const data = res.data;
 
-        const vehicleNames = data.map((item: any) => item.Vehicle_name);
-        const vehicleValues = data.map((item: any) => item.Vehicle_desc.length);
+        const vehicleNames = data.map((item: any) => item.vehicle_name);
+        const vehicleValues = data.map((item: any) => item.vehicle_desc.length);
         // const vehicleValues = new Array(vehicleNames.length).fill(2);
 
         // Configure chart options for bar chart
