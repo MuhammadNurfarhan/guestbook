@@ -4,7 +4,6 @@ import { useLoading } from '../../hooks';
 import { getVehicleAPI, createVehicleAPI, updateVehicleAPI, deleteVehicleAPI } from '@/api/master/masterVehicle';
 
 interface Vehicle {
-  vehicle_id: string;
   vehicle_name: string;
   vehicle_desc: string;
 }
@@ -101,7 +100,7 @@ const showSnackbar = (text: string, color: string) => {
 };
 
 onMounted(() => {
-  getVehicleTypes
+  getVehicleTypes();
 });
 </script>
 
