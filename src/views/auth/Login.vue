@@ -1,3 +1,43 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useAuthStore } from '@/stores/modules/authStore';
+import { useRouter } from 'vue-router';
+
+// State
+const valid = ref<boolean>(false);
+const email = ref<string>(localStorage.getItem('email') || '');
+const password = ref<string>('');
+const error = ref<string | null>(null);
+// Store and Router
+const authStore = useAuthStore();
+const router = useRouter();
+
+// Validation rules
+const rules = {
+  required: (value: string) => !!value || 'Required.',
+  email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
+  password: (value: string) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(value) || 'Password must be at least 8 characters, contain at least one uppercase letter, one lowercase letter, one number.';
+  },
+};
+
+// Methods
+const submitLogin = async () =>  {
+  error.value = null;
+  const success = await authStore.login(email.value, password.value);
+
+  if (success !== null) {
+    // Redirect to dashboard
+    router.push('/dashboard');
+  } else {
+    // Handle error
+    error.value = 'Invalid email or password';
+  }
+};
+
+</script>
+
 <template>
   <div class="auth-page">
     <v-container class="fill-height">
@@ -43,46 +83,6 @@
     </v-container>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/modules/authStore';
-import { useRouter } from 'vue-router';
-
-// State
-const valid = ref<boolean>(false);
-const email = ref<string>(localStorage.getItem('email') || '');
-const password = ref<string>('');
-const error = ref<string | null>(null);
-// Store and Router
-const authStore = useAuthStore();
-const router = useRouter();
-
-// Validation rules
-const rules = {
-  required: (value: string) => !!value || 'Required.',
-  email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
-  password: (value: string) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    return passwordRegex.test(value) || 'Password must be at least 8 characters, contain at least one uppercase letter, one lowercase letter, one number.';
-  },
-};
-
-// Methods
-const submitLogin = async () =>  {
-  error.value = null;
-  const success = await authStore.login(email.value, password.value);
-
-  if (success !== null) {
-    // Redirect to dashboard
-    router.push('/dashboard');
-  } else {
-    // Handle error
-    error.value = 'Invalid email or password';
-  }
-};
-
-</script>
 
 <style lang="scss">
 @import '@/styles/auth.scss';

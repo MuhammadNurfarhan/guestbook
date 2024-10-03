@@ -1,3 +1,75 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import axios from 'axios';
+import * as XLSX from 'xlsx';
+
+const periods = ['Weekly', 'Monthly', 'Yearly'];
+const selectedPeriod = ref('Weekly');
+const selectedDate = ref('');
+const reportData = ref<any[]>([]);
+const tableHeaders = [
+  { title: 'Visitor ID', key: 'visitor_id', sortable: true },
+  { title: 'Visitor Name', key: 'visitor_name', sortable: true },
+  { title: 'Date', key: 'created_date', sortable: true },
+  { title: 'Check-In Time', key: 'check_in', sortable: true },
+  { title: 'Check-Out Time', key: 'check_out', sortable: true },
+];
+const menu = ref(false);
+const isLoading = ref(false);
+const form = ref(null);
+const snackbar = ref({ show: false, message: '', color: 'success' });
+
+const maxDate = computed(() => new Date().toISOString().substr(0, 10));
+
+const fetchReportData = async () => {
+  if (!(form.value as any).validate()) return;
+
+  isLoading.value = true;
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/visit`, {
+        params: {
+          period: selectedPeriod.value,
+          created_date: selectedDate.value,
+        }
+      }
+    );
+    reportData.value = response.data.data;
+    showSnackbar('Report generated successfully', 'success');
+  } catch (error) {
+    console.error('Error fetching report data:', error);
+    showSnackbar('Failed to generate report. Please try again.', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const exportToExcel = () => {
+  if (!reportData.value.length) {
+    showSnackbar('No data to export', 'warning');
+    return;
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(reportData.value);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Visitor Report');
+
+  XLSX.writeFile(workbook, `Visitor_Report_${selectedPeriod.value}_${selectedDate.value}.xlsx`);
+  showSnackbar('Report exported successfully', 'success');
+};
+
+const resetForm = () => {
+  selectedPeriod.value = 'Weekly';
+  selectedDate.value = '';
+  reportData.value = [];
+  (form.value as any)?.reset();
+};
+
+const showSnackbar = (message: string, color: string) => {
+  snackbar.value = { show: true, message, color };
+};
+</script>
+
 <template>
   <Parent-card title="Report">
     <v-card>
@@ -81,75 +153,3 @@
     </v-snackbar>
   </Parent-card>
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue';
-import axios from 'axios';
-import * as XLSX from 'xlsx';
-
-const periods = ['Weekly', 'Monthly', 'Yearly'];
-const selectedPeriod = ref('Weekly');
-const selectedDate = ref('');
-const reportData = ref<any[]>([]);
-const tableHeaders = [
-  { title: 'Visitor ID', key: 'visitor_id', sortable: true },
-  { title: 'Visitor Name', key: 'visitor_name', sortable: true },
-  { title: 'Date', key: 'created_date', sortable: true },
-  { title: 'Check-In Time', key: 'check_in', sortable: true },
-  { title: 'Check-Out Time', key: 'check_out', sortable: true },
-];
-const menu = ref(false);
-const isLoading = ref(false);
-const form = ref(null);
-const snackbar = ref({ show: false, message: '', color: 'success' });
-
-const maxDate = computed(() => new Date().toISOString().substr(0, 10));
-
-const fetchReportData = async () => {
-  if (!(form.value as any).validate()) return;
-
-  isLoading.value = true;
-  try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/visit`, {
-        params: {
-          period: selectedPeriod.value,
-          created_date: selectedDate.value,
-        }
-      }
-    );
-    reportData.value = response.data.data;
-    showSnackbar('Report generated successfully', 'success');
-  } catch (error) {
-    console.error('Error fetching report data:', error);
-    showSnackbar('Failed to generate report. Please try again.', 'error');
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const exportToExcel = () => {
-  if (!reportData.value.length) {
-    showSnackbar('No data to export', 'warning');
-    return;
-  }
-
-  const worksheet = XLSX.utils.json_to_sheet(reportData.value);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Visitor Report');
-
-  XLSX.writeFile(workbook, `Visitor_Report_${selectedPeriod.value}_${selectedDate.value}.xlsx`);
-  showSnackbar('Report exported successfully', 'success');
-};
-
-const resetForm = () => {
-  selectedPeriod.value = 'Weekly';
-  selectedDate.value = '';
-  reportData.value = [];
-  (form.value as any)?.reset();
-};
-
-const showSnackbar = (message: string, color: string) => {
-  snackbar.value = { show: true, message, color };
-};
-</script>

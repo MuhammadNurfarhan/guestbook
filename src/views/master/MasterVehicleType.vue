@@ -12,7 +12,7 @@ const vehicles = ref<Vehicle[]>([]);
 const editMode = ref<boolean>(false);
 const editedVehicle = ref<Vehicle | null>(null);
 const showDialog = ref<boolean>(false);
-const deleteDialog = ref<boolean>(false);
+const closeDialog = ref<boolean>(false);
 const deleting = ref<boolean>(false);
 const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
@@ -75,23 +75,23 @@ const editVehicleType = (vehicle: Vehicle) => {
 };
 
 const confirmDelete = (vehicle: Vehicle) => {
-  deleting.value = vehicle;
-  deleteDialog.value = true;
+  editedVehicle.value = vehicle;
+  closeDialog.value = true;
 };
 
 const deleteVehicleType = async () => {
-  if (!deleting.value) return;
+  if (!editedVehicle.value) return;
 
   try {
-    await deleteVehicleAPI(deleting.value.vehicle_id);
+    await deleteVehicleAPI(editedVehicle.value.vehicle_id);
     await getVehicleTypes();
-    deleteDialog.value = false;
+    closeDialog.value = false;
     showSnackbar('Vehicle type deleted successfully!', 'success');
   } catch (error) {
     console.error('Error deleting vehicle type:', error);
     showSnackbar('Error deleting vehicle type', 'error');
   } finally {
-    deleting.value = null;
+    deleting.value = false;
   }
 };
 
@@ -139,15 +139,15 @@ onMounted(() => {
       @cancel="handleCancel"
     />
 
-    <v-dialog v-model="deleteDialog" max-width="500px">
+    <v-dialog v-model="closeDialog" max-width="500px">
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
         <v-divider />
         <v-card-text>Are you sure you want to delete this vehicle type?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" variant="text" @click="deleteDialog = false">Cancel</v-btn>
           <v-btn color="error" variant="text" @click="deleteVehicleType">Delete</v-btn>
+          <v-btn color="primary" variant="text" @click="closeDialog = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -160,4 +160,3 @@ onMounted(() => {
     </v-snackbar>
   </ParentCard>
 </template>
-

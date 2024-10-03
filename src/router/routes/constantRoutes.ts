@@ -9,7 +9,6 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
     meta: {
       title: "Dashboard",
       icon: "mdi-home",
-      // requireAuth: true,
     },
     children: [
       {

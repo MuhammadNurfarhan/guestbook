@@ -1,67 +1,64 @@
 <script setup lang="ts">
-import { defineProps, ref, watch } from 'vue';
+import { createVendorAPI, updateVendorAPI } from '@/api/master/masterVendor';
 
-const props = defineProps<{
-  show: boolean;
-  editMode: boolean;
-  editedVendor: Vendor | null;
-}>();
-
-interface Vendor {
-  vendor_id: string;
-  vendor_name: string;
-  vendor_desc: string;
-}
-
-const localVendor = ref<Vendor>({
-  vendor_id: '',
-  vendor_name: '',
-  vendor_desc: '',
+const props = defineProps({
+  showDialog: Boolean,
+  action: Object,
 });
 
-const dialogTitle = ref('Create Vendor');
-const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits(['close']);
 
-watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Vendor' : 'Create Vendor';
+const dialogState = computed({
+  get: () => props.showDialog,
+  set: () => {
+    emit('close');
+  },
+})
+
+const dialogTitle = computed(() => {
+  return props.action.type === 'create' ? 'create' : 'update';
 });
 
-watch(() => props.editedVendor, (newVendor) => {
-  if (newVendor) {
-    localVendor.value = { ...newVendor };
-  } else {
-    localVendor.value = {
-      vendor_id: '',
-      vendor_name: '',
-      vendor_desc: '',
-    };
-  }
+const state = reactive({
+  formData: {
+    vendor_id: '',
+    vendor_name: '',
+    vendor_desc: '',
+  },
 });
 
-const save = () => {
-  emit('save', localVendor.value);
+const handleCancelClick = () => {
+  emit('close');
 };
 
-const cancel = () => {
-  emit('cancel');
+const handleSaveClick = () => {
+  const request =
+    props.action.type === "create"
+      ? createVendorAPI
+      : updateVendorAPI;
+
+  request(state.formData).then(() => {
+    emit('close');
+  });
 };
+
 </script>
 
 <template>
-  <v-dialog v-model="props.show" max-width="600px">
+  <v-dialog v-model="dialogState" max-width="600px">
     <v-card>
-      <v-card-title>{{ dialogTitle }}</v-card-title>
+      <v-card-title>{{ dialogTitle }} Vendor</v-card-title>
       <v-divider />
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localVendor.vendor_name"
+            v-model="state.formData.vendor_name"
             label="Vendor Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localVendor.vendor_desc"
+            v-model="state.formData.vendor_desc"
             label="Description"
             variant="outlined"
             rows="2"
@@ -70,9 +67,11 @@ const cancel = () => {
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn class="bg-primary" @click="save">Save</v-btn>
-        <v-btn class="bg-error" @click="cancel">Cancel</v-btn>
+        <v-btn class="bg-primary" @click="handleSaveClick">Save</v-btn>
+        <v-btn class="bg-error" @click="handleCancelClick">Cancel</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
+
+<style lang="scss"></style>

@@ -15,7 +15,7 @@ const handleCode = (code: any, msg: any) => {
       router.push({ path: "/401" }).catch(() => {});
       break;
     default:
-      ElMessage.error(msg);
+      ElMessage.error(msg || `request.apiErrorWithCode, ${ code }`);
       break;
   }
 };

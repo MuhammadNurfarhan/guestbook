@@ -12,7 +12,7 @@ const identities = ref<Identity[]>([]);
 const editMode = ref<boolean>(false);
 const editedIdentity = ref<Identity | null>(null);
 const showDialog = ref<boolean>(false);
-const deleteDialog = ref<boolean>(false);
+const closeDialog = ref<boolean>(false);
 const deleting = ref<boolean>(false);
 const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
@@ -23,14 +23,14 @@ const tableHeaders = [
   { title: 'Actions', key: 'actions', sortable: false },
 ];
 
-const getIdentityTypes = async () => {
+const getIdentity = async () => {
   showLoading();
   try {
     const response = await getIdentityAPI();
     identities.value = response.data;
   } catch (error) {
     console.error('Error fetching identity types:', error);
-    showSnackbar('Error fetching identity types', 'error');
+    showSnackbar('Failed to fetch identity types', 'error');
   } finally {
     hideLoading();
   }
@@ -45,11 +45,11 @@ const saveIdentityType = async (payload: Identity) => {
       await createIdentityAPI(payload);
       showSnackbar('Identity type added successfully!', 'success');
     }
-    await getIdentityTypes();
+    await getIdentity();
     showDialog.value = false;
   } catch (error) {
     console.error('Error saving identity type:', error);
-    showSnackbar('Error saving identity type', 'error');
+    showSnackbar('Failed to save identity type', 'error');
   }
 };
 
@@ -76,7 +76,7 @@ const editIdentityType = (identity: Identity) => {
 
 const confirmDelete = (identity: Identity) => {
   editedIdentity.value = identity;
-  deleteDialog.value = true;
+  closeDialog.value = true;
 };
 
 const deleteIdentityType = async () => {
@@ -85,24 +85,23 @@ const deleteIdentityType = async () => {
   deleting.value = true;
   try {
     await deleteIdentityAPI(editedIdentity.value.identitas_id);
-    await getIdentityTypes();
-    deleteDialog.value = false;
+    await getIdentity();
+    closeDialog.value = false;
     showSnackbar('Identity type deleted successfully!', 'success');
   } catch (error) {
     console.error('Error deleting identity type:', error);
-    showSnackbar('Error deleting identity type', 'error');
+    showSnackbar('Failed to delete identity type', 'error');
   } finally {
     deleting.value = false;
   }
 };
 
-// Show snackbar with feedback
 const showSnackbar = (text: string, color: string) => {
   snackbar.value = { show: true, text, color };
 };
 
 onMounted(() => {
-  getIdentityTypes();
+  getIdentity();
 });
 </script>
 
@@ -123,10 +122,10 @@ onMounted(() => {
         class="elevation-1"
       >
         <template v-slot:item.actions="{ item }">
-          <v-btn icon @click="editIdentityType(item)" class="mr-2" color="primary">
+          <v-btn icon small @click="editIdentityType(item)" class="mr-2" color="primary">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
-          <v-btn icon @click="confirmDelete(item)" color="error">
+          <v-btn icon small @click="confirmDelete(item)" color="error">
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </template>
@@ -141,7 +140,7 @@ onMounted(() => {
       @cancel="handleCancel"
     />
 
-    <v-dialog v-model="deleteDialog" max-width="500px">
+    <v-dialog v-model="closeDialog" max-width="500px">
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
         <v-divider />
@@ -149,7 +148,7 @@ onMounted(() => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="bg-error" variant="text" @click="deleteIdentityType" :loading="deleting">Delete</v-btn>
-          <v-btn color="bg-grey" variant="text" @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="bg-grey" variant="text" @click="closeDialog = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

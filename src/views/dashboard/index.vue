@@ -1,3 +1,19 @@
+<script lang="ts">
+import { defineComponent } from 'vue';
+import VendorChart from '@/components/charts/VendorChart.vue';
+import VisitorChart from '@/components/charts/VisitorChart.vue';
+import VehicleChart from '@/components/charts/VehicleChart.vue';
+
+export default defineComponent({
+  name: 'Dashboard',
+  components: {
+    VendorChart,
+    VisitorChart,
+    VehicleChart,
+  },
+});
+</script>
+
 <template>
   <Parent-card title="Dashboard">
       <v-row>
@@ -21,19 +37,3 @@
       </v-row>
   </Parent-card>
 </template>
-
-<script lang="ts">
-import { defineComponent } from 'vue';
-import VendorChart from '@/components/charts/VendorChart.vue';
-import VisitorChart from '@/components/charts/VisitorChart.vue';
-import VehicleChart from '@/components/charts/VehicleChart.vue';
-
-export default defineComponent({
-  name: 'Dashboard',
-  components: {
-    VendorChart,
-    VisitorChart,
-    VehicleChart,
-  },
-});
-</script>

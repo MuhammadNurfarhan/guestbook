@@ -19,9 +19,9 @@ export const createVisitAPI = (data: any) => {
   });
 };
 
-export const updateVisitAPI = (data: any) => {
+export const updateVisitAPI = (visit_id: string, data: any) => {
   return request({
-    url: "/api/v1/visit",
+    url: `/api/v1/visit/${visit_id}`,
     method: "put",
     data,
   });

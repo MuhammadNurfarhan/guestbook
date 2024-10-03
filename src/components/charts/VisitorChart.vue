@@ -1,9 +1,3 @@
-<template>
-  <div>
-    <div ref="chartRef" style="width: 100%; height: 400px;"></div>
-  </div>
-</template>
-
 <script lang="ts">
 import { ref, onMounted, defineComponent } from 'vue';
 import * as echarts from 'echarts';
@@ -77,6 +71,12 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <div>
+    <div ref="chartRef" style="width: 100%; height: 400px;"></div>
+  </div>
+</template>
 
 <style scoped>
 /* Optional custom styles */

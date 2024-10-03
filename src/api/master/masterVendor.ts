@@ -3,7 +3,7 @@ import request from "@/utils/request";
 export const getVendorAPI = () => {
   return request({
     url: "/api/v1/vendor/list",
-    method: "get"
+    method: "get",
   });
 };
 
@@ -11,15 +11,15 @@ export const createVendorAPI = (data: any) => {
   return request({
     url: "/api/v1/vendor",
     method: "post",
-    data
+    data,
   });
 };
 
-export const updateVendorAPI = (vendor_id: string, data: any) => {
+export const updateVendorAPI = (data: any) => {
   return request({
-    url: `/api/v1/vendor/${vendor_id}`,
+    url: `/api/v1/vendor/`,
     method: "put",
-    data
+    data,
   });
 };
 

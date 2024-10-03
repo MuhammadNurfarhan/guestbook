@@ -4,16 +4,15 @@ import { useLoading } from '../../hooks';
 import { getPurposeAPI, createPurposeAPI, updatePurposeAPI, deletePurposeAPI } from '@/api/master/masterPurpose';
 
 interface Purpose {
-  purpose_id: string;
   purpose_name: string;
   purpose_desc: string;
 }
 
-const Purposes = ref<Purpose[]>([]);
+const purposes = ref<Purpose[]>([]);
 const editMode = ref<boolean>(false);
 const editedPurpose = ref<Purpose | null>(null);
 const showDialog = ref<boolean>(false);
-const deleteDialog = ref<boolean>(false);
+const closeDialog = ref<boolean>(false);
 const deleting = ref<boolean>(false);
 const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
@@ -28,7 +27,7 @@ const getPurposes = async () => {
   showLoading();
   try {
     const response = await getPurposeAPI();
-    Purposes.value = response.data;
+    purposes.value = response.data;
   } catch (error) {
     console.error('Error fetching visitor purposes:', error);
     showSnackbar('Error fetching visitor purposes', 'error');
@@ -77,7 +76,7 @@ const editPurpose = (purpose: Purpose) => {
 
 const confirmDelete = (purpose: Purpose) => {
   editedPurpose.value = purpose;
-  deleteDialog.value = true;
+  closeDialog.value = true;
 };
 
 const deletePurpose = async () => {
@@ -87,7 +86,7 @@ const deletePurpose = async () => {
   try {
     await deletePurposeAPI(editedPurpose.value.purpose_id);
     await getPurposes();
-    deleteDialog.value = false;
+    closeDialog.value = false;
     showSnackbar('Visitor purpose deleted successfully!', 'success');
   } catch (error) {
     console.error('Error deleting visitor purpose:', error);
@@ -118,7 +117,7 @@ onMounted(() => {
 
       <v-data-table
         :headers="tableHeaders"
-        :items="Purposes"
+        :items="purposes"
         :loading="loading"
         class="elevation-1"
       >
@@ -141,7 +140,7 @@ onMounted(() => {
       @cancel="handleCancel"
     />
 
-    <v-dialog v-model="deleteDialog" max-width="500px">
+    <v-dialog v-model="closeDialog" max-width="500px">
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
         <v-divider />
@@ -149,7 +148,7 @@ onMounted(() => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="bg-error" variant="text" @click="deletePurpose" :loading="deleting">Delete</v-btn>
-          <v-btn class="bg-grey" variant="text" @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn class="bg-grey" variant="text" @click="closeDialog = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

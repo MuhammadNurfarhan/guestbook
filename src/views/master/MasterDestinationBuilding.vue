@@ -4,7 +4,6 @@ import { useLoading } from '../../hooks';
 import { getDestinateAPI, createDestinateAPI, updateDestinateAPI, deleteDestinateAPI } from '@/api/master/masterDestinate';
 
 interface Destinate {
-  destinate_id: string;
   destinate_name: string;
   destinate_desc: string;
 }
@@ -13,8 +12,8 @@ const destinates = ref<Destinate[]>([]);
 const editMode = ref<boolean>(false);
 const editedDestinate = ref<Destinate | null>(null);
 const showDialog = ref<boolean>(false);
-const deleteDialog = ref<boolean>(false);
-const deleting = ref<Destinate | null>(null);
+const closeDialog = ref<boolean>(false);
+const deleting = ref<boolean>(false);
 const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
 
@@ -77,18 +76,18 @@ const editDestinate = (destinate: Destinate) => {
 
 // Confirm delete action
 const confirmDelete = (destinate: Destinate) => {
-  deleting.value = destinate;
-  deleteDialog.value = true;
+  editedDestinate.value = destinate;
+  closeDialog.value = true;
 };
 
 // Delete destination building function
 const deleteDestinationBuilding = async () => {
-  if (!deleting.value) return;
+  if (!editedDestinate.value) return;
 
   try {
-    await deleteDestinateAPI(deleting.value.destinate_id);
+    await deleteDestinateAPI(editedDestinate.value.destinate_id);
     await getDestinates();
-    deleteDialog.value = false;
+    closeDialog.value = false;
     showSnackbar('Destination building deleted successfully!', 'success');
   } catch (error) {
     console.error('Error deleting destination building:', error);
@@ -138,12 +137,12 @@ onMounted(() => {
     <DestinationDialog
       v-model:show="showDialog"
       :editMode="editMode"
-      :editedDestinate="editedDestinate"
+      :editedDestinate="editedDestinate ? editedDestinate : null"
       @save="saveDestinate"
       @cancel="handleCancel"
     />
 
-    <v-dialog v-model="deleteDialog" max-width="500px">
+    <v-dialog v-model="closeDialog" max-width="500px">
       <v-card>
         <v-card-title>Confirm Deletion</v-card-title>
         <v-divider />
@@ -151,7 +150,7 @@ onMounted(() => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="bg-error" @click="deleteDestinationBuilding" :loading="deleting">Delete</v-btn>
-          <v-btn class="bg-grey" @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn class="bg-grey" @click="closeDialog = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
