@@ -129,8 +129,8 @@ const submitVisitorData = async (payload: VisitorData) => {
     } else {
       response = await createVisitAPI(payload);
     }
-    await getVisitorData();  // Refresh data after creation/update
-    cancelEdit();  // Reset form
+    await getVisitorData();
+    cancelEdit();
 
     // Return the response to capture in handleSubmit
     return response;
@@ -188,9 +188,8 @@ const cancelEdit = () => {
 const handleSubmit = async () => {
   try {
     const data = await submitVisitorData(formData.value);  // Call API and capture response
-    console.log("API Response:", data);
   } catch (err) {
-    console.error("Error in handleSubmit:", err);  // Log any errors
+    console.error("Error in handleSubmit:", err);
   }
 };
 
