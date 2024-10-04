@@ -21,7 +21,6 @@ const dialogTitle = computed(() => {
 
 const state = reactive({
   formData: {
-    purpose_id: '',
     purpose_name: '',
     purpose_desc: '',
   },

@@ -97,7 +97,6 @@ const showSnackbar = (message: string, color: string) => {
                 offset-y
                 min-width="auto"
               >
-                <template v-slot:activator="{ props }">
                   <v-text-field
                     v-model="selectedDate"
                     label="Select Date"
@@ -106,7 +105,6 @@ const showSnackbar = (message: string, color: string) => {
                     :rules="[v => !!v || 'Date is required']"
                     required
                   ></v-text-field>
-                </template>
                 <v-date-picker
                   v-model="selectedDate"
                   @input="menu = false"
