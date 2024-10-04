@@ -7,11 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AddDestinationDialog: typeof import('./views/master/components/AddDestinationDialog.vue')['default']
-    AddIdentityDialog: typeof import('./views/master/components/AddIdentityDialog.vue')['default']
-    AddVehicleDialog: typeof import('./views/master/components/AddVehicleDialog.vue')['default']
-    AddVendorDialog: typeof import('./views/master/components/AddVendorDialog.vue')['default']
-    AddVisitorPurposeDialog: typeof import('./views/master/components/AddVisitorPurposeDialog.vue')['default']
     ChildCard: typeof import('./components/ChildCard.vue')['default']
     DestinationDialog: typeof import('./views/master/components/DestinationDialog.vue')['default']
     FooterPanel: typeof import('./layouts/internal/footer/FooterPanel.vue')['default']
