@@ -125,7 +125,7 @@ const submitVisitorData = async (payload: VisitorData) => {
   try {
     let response;
     if (isEditing.value && formData.value) {
-      response = await updateVisitAPI(payload.visit_id, payload);
+      response = await updateVisitAPI(payload);
     } else {
       response = await createVisitAPI(payload);
     }
