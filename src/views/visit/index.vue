@@ -11,6 +11,7 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 
 interface VisitorData {
   visit_name: string;
+  visit_no: string;
   vehicle_name: string;
   identitas_name: string;
   destinate_name: string;
@@ -34,6 +35,7 @@ interface VisitorData {
 
 const formData = ref<VisitorData>({
   visit_name: '',
+  visit_no: '',
   vehicle_name: '',
   identitas_name: '',
   destinate_name: '',
@@ -51,7 +53,7 @@ const formData = ref<VisitorData>({
   remarks: '',
   check_in: '',
   check_out: '',
-  status: '',
+  status: 'Check in',
   // img_url: '',
 });
 
@@ -77,7 +79,6 @@ const headers = ref([
 const visitorData = ref<VisitorData[]>([]);
 const search = ref('');
 const isEditing = ref(false);
-const snackbar = ref({ show: false, message: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
 const dropdownOptions = ref({
   vendors: [],
@@ -88,7 +89,7 @@ const dropdownOptions = ref({
 });
 
 const error = ref('');
-const img_url = ref<string | null>(null);
+// const img_url = ref<string | null>(null);
 
 const fetchDropdownOptions = async () => {
   try {
@@ -112,7 +113,7 @@ const getVisitorData = async () => {
   try {
     const today = await new Date();
     const res = await getVisitAPI(today)
-    visitorData.value = await res?.data || [];
+    visitorData.value = res?.data || [];
   } catch (err: any) {
     error.value = err.response?.data?.message || 'An error occurred. Please try again.(error)';
   } finally {
@@ -122,13 +123,17 @@ const getVisitorData = async () => {
 
 const submitVisitorData = async (payload: VisitorData) => {
   try {
+    let response;
     if (isEditing.value && formData.value) {
-      await updateVisitAPI(payload.visit_id, payload);
+      response = await updateVisitAPI(payload.visit_id, payload);
     } else {
-      await createVisitAPI(payload);
+      response = await createVisitAPI(payload);
     }
-    await getVisitorData();
-    cancelEdit();
+    await getVisitorData();  // Refresh data after creation/update
+    cancelEdit();  // Reset form
+
+    // Return the response to capture in handleSubmit
+    return response;
   } catch (err: any) {
     error.value = err.response?.data?.message || 'An error occurred. Please try again.';
   }
@@ -136,7 +141,7 @@ const submitVisitorData = async (payload: VisitorData) => {
 
 const editVisitor = (item: any) => {
   isEditing.value = true;
-  formData.value = { ...item };
+  formData.value = item;
 };
 
 const deleteVisitor = async (item: any) => {
@@ -151,18 +156,48 @@ const deleteVisitor = async (item: any) => {
   });
 };
 
+const checkoutVisitor = async (item: any) => {
+  try {
+    // Update the status to 'Check out' and set the check_out time
+    const updatedData = {
+      ...item,
+      status: 'Check out',
+      check_out: new Date().toISOString(),
+    };
+
+    // Call the API to update the visitor data
+    await updateVisitAPI(item.visit_id, updatedData);
+
+    // Reload the visitor data to reflect changes
+    await getVisitorData();
+
+    ElMessage({
+      message: 'Checkout successful!',
+      type: 'success',
+    });
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'An error occurred during checkout.';
+  }
+};
+
 const cancelEdit = () => {
   formData.value = null; // Reset form
   isEditing.value = false; // Exit edit mode
 };
 
-const handleSubmit = () => {
-  submitVisitorData(formData.value); // Call API
+const handleSubmit = async () => {
+  try {
+    const data = await submitVisitorData(formData.value);  // Call API and capture response
+    console.log("API Response:", data);
+  } catch (err) {
+    console.error("Error in handleSubmit:", err);  // Log any errors
+  }
 };
 
+
 onMounted(async () => {
-  await getVisitorData();
   await fetchDropdownOptions();
+  await getVisitorData();
 });
 
 onBeforeMount(() => {
@@ -171,7 +206,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <Parent-card title="Visitor Form" v-loading="loading">
+  <Parent-card title="Visitor" v-loading="loading">
     <v-row>
       <v-col cols="12">
         <v-form @submit.prevent="handleSubmit">
@@ -288,6 +323,9 @@ onBeforeMount(() => {
               <v-btn icon @click="deleteVisitor(item)">
                 <v-icon color="red">mdi-delete</v-icon>
               </v-btn>
+              <v-btn icon @click="checkoutVisitor(item)" v-if="item.status === 'Check in'">
+                <v-icon color="green">mdi-check-circle</v-icon>
+              </v-btn>
             </td>
           </tr>
         </template>
@@ -296,9 +334,6 @@ onBeforeMount(() => {
 
     <!-- Error Display -->
     <v-alert v-if="error" type="error" dismissible>{{ error }}</v-alert>
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
-      {{ snackbar.message }}
-    </v-snackbar>
   </Parent-card>
 </template>
 

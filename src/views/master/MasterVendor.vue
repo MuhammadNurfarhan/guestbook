@@ -12,7 +12,7 @@ const tableHeaders: any = [
 ];
 
 const state = reactive({
-  tableData: null,
+  tableData: [],
   showDialog: false,
   dialogAction: {
     type: "create",
@@ -60,6 +60,10 @@ const handleDialogClose = () => {
   getVendorList();
 };
 
+onMounted(() => {
+  getVendorList();
+});
+
 onBeforeMount(() => {
   getVendorList();
 });
@@ -78,16 +82,11 @@ onBeforeMount(() => {
       <v-data-table
         :headers="tableHeaders"
         :items="state.tableData"
-        :loading="loading"
         class="elevation-1"
       >
         <template v-slot:item.actions="{ item }">
-          <v-btn icon small @click="handleEditClick(item)" class="mr-2" color="primary">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-          <v-btn icon small @click="handleDeleteClick(item)" color="error">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
+          <v-icon color="primary" @click="handleEditClick(item)" class="mr-2">mdi-pencil</v-icon>
+          <v-icon color="error" @click="handleDeleteClick(item)">mdi-delete</v-icon>
         </template>
       </v-data-table>
     </v-card>
@@ -96,7 +95,7 @@ onBeforeMount(() => {
       v-if="state.showDialog"
       :showDialog="state.showDialog"
       :action="state.dialogAction"
-      @cancel="handleDialogClose"
+      @close="handleDialogClose"
     />
   </ParentCard>
 </template>

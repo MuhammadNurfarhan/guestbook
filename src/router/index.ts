@@ -1,28 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/modules/authStore';
 import constantRoutes from './routes/constantRoutes';
 
 
 const router = createRouter({
   history: createWebHistory(),
   routes: constantRoutes,
-});
-
-// Navigation guard for protected routes
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  authStore.restoreUser()
-
-  if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      next({ name: 'Login' });
-    } else {
-      next();
-    }
-  } else {
-    next();
-  }
 });
 
 export function resetRouter() {

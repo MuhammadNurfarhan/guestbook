@@ -1,163 +1,97 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { getIdentityAPI, deleteIdentityAPI } from '@/api/master/masterIdentity';
 import { useLoading } from '../../hooks';
-import { getIdentityAPI, createIdentityAPI, updateIdentityAPI, deleteIdentityAPI } from '@/api/master/masterIdentity';
+import { ElMessageBox } from 'element-plus';
 
-interface Identity {
-  identitas_name: string;
-  identitas_desc: string;
-}
-
-const identities = ref<Identity[]>([]);
-const editMode = ref<boolean>(false);
-const editedIdentity = ref<Identity | null>(null);
-const showDialog = ref<boolean>(false);
-const closeDialog = ref<boolean>(false);
-const deleting = ref<boolean>(false);
-const snackbar = ref({ show: false, text: '', color: 'success' });
 const { loading, showLoading, hideLoading } = useLoading();
 
-const tableHeaders = [
+const tableHeaders: any = [
   { title: 'Identity Name', key: 'identitas_name' },
   { title: 'Description', key: 'identitas_desc' },
   { title: 'Actions', key: 'actions', sortable: false },
 ];
 
-const getIdentity = async () => {
+const state = reactive({
+  tableData: [],
+  showDialog: false,
+  dialogAction: {
+    type: "create",
+    data: {},
+  },
+});
+
+const getIdentityList = () => {
   showLoading();
-  try {
-    const response = await getIdentityAPI();
-    identities.value = response.data;
-  } catch (error) {
-    console.error('Error fetching identity types:', error);
-    showSnackbar('Failed to fetch identity types', 'error');
-  } finally {
+  getIdentityAPI().then((res: any) => {
+    state.tableData = res.data;
     hideLoading();
-  }
+  });
 };
 
-const saveIdentityType = async (payload: Identity) => {
-  try {
-    if (editMode.value && editedIdentity.value) {
-      await updateIdentityAPI(editedIdentity.value.identitas_id, payload);
-      showSnackbar('Identity type updated successfully!', 'success');
-    } else {
-      await createIdentityAPI(payload);
-      showSnackbar('Identity type added successfully!', 'success');
-    }
-    await getIdentity();
-    showDialog.value = false;
-  } catch (error) {
-    console.error('Error saving identity type:', error);
-    showSnackbar('Failed to save identity type', 'error');
-  }
+const handleCreateClick = () => {
+  state.dialogAction.type = "create";
+  state.dialogAction.data = null;
+  state.showDialog = true;
 };
 
-const createIdentity = () => {
-  editMode.value = false;
-  showDialog.value = true;
-  editedIdentity.value = {
-    identitas_name: '',
-    identitas_desc: '',
-  };
+const handleEditClick = (item: any) => {
+  state.dialogAction.type = "update";
+  state.dialogAction.data = item;
+  state.showDialog = true;
 };
 
-const handleCancel = () => {
-  showDialog.value = false;
-  editMode.value = false;
-  editedIdentity.value = null;
+const handleDeleteClick = (item: any) => {
+  ElMessageBox.confirm(
+    'Are you sure you want to delete this identity?',
+    'Delete Confirmation',
+    {
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+  }).then(() => {
+    deleteIdentityAPI(item).then(() => {
+      getIdentityList();
+    });
+  });
 };
 
-const editIdentityType = (identity: Identity) => {
-  editMode.value = true;
-  editedIdentity.value = { ...identity };
-  showDialog.value = true;
+const handleDialogClose = () => {
+  state.showDialog = false;
+  getIdentityList();
 };
 
-const confirmDelete = (identity: Identity) => {
-  editedIdentity.value = identity;
-  closeDialog.value = true;
-};
-
-const deleteIdentityType = async () => {
-  if (!editedIdentity.value) return;
-
-  deleting.value = true;
-  try {
-    await deleteIdentityAPI(editedIdentity.value.identitas_id);
-    await getIdentity();
-    closeDialog.value = false;
-    showSnackbar('Identity type deleted successfully!', 'success');
-  } catch (error) {
-    console.error('Error deleting identity type:', error);
-    showSnackbar('Failed to delete identity type', 'error');
-  } finally {
-    deleting.value = false;
-  }
-};
-
-const showSnackbar = (text: string, color: string) => {
-  snackbar.value = { show: true, text, color };
-};
-
-onMounted(() => {
-  getIdentity();
+onBeforeMount(() => {
+  getIdentityList();
 });
 </script>
 
 <template>
-  <ParentCard title="Identity" v-loading="loading">
+  <ParentCard title="Identities" v-loading="loading">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
-        <span class="text-h5">Identity Type List</span>
-        <v-btn color="primary" @click="createIdentity" prepend-icon="mdi-plus">
+        <span class="text-h5">Identity List</span>
+        <v-btn color="primary" @click="handleCreateClick" prepend-icon="mdi-plus">
           Create
         </v-btn>
       </v-card-title>
 
       <v-data-table
         :headers="tableHeaders"
-        :items="identities"
-        :loading="loading"
+        :items="state.tableData"
         class="elevation-1"
       >
         <template v-slot:item.actions="{ item }">
-          <v-btn icon small @click="editIdentityType(item)" class="mr-2" color="primary">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-          <v-btn icon small @click="confirmDelete(item)" color="error">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
+          <v-icon color="primary" @click="handleEditClick(item)" class="mr-2">mdi-pencil</v-icon>
+          <v-icon color="error" @click="handleDeleteClick(item)">mdi-delete</v-icon>
         </template>
       </v-data-table>
     </v-card>
 
     <IdentityDialog
-      v-model:show="showDialog"
-      :editMode="editMode"
-      :editedIdentity="editedIdentity"
-      @save="saveIdentityType"
-      @cancel="handleCancel"
+      v-if="state.showDialog"
+      :showDialog="state.showDialog"
+      :action="state.dialogAction"
+      @close="handleDialogClose"
     />
-
-    <v-dialog v-model="closeDialog" max-width="500px">
-      <v-card>
-        <v-card-title>Confirm Deletion</v-card-title>
-        <v-divider />
-        <v-card-text>Are you sure you want to delete this identity type?</v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="bg-error" variant="text" @click="deleteIdentityType" :loading="deleting">Delete</v-btn>
-          <v-btn color="bg-grey" variant="text" @click="closeDialog = false">Cancel</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
-      {{ snackbar.text }}
-      <template v-slot:actions>
-        <v-btn color="white" @click="snackbar.show = false">Close</v-btn>
-      </template>
-    </v-snackbar>
   </ParentCard>
 </template>

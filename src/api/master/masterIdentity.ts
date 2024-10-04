@@ -11,21 +11,22 @@ export const createIdentityAPI = (data: any) => {
   return request({
     url: "/api/v1/identitas",
     method: "post",
-    data,
+    data
   });
 };
 
-export const updateIdentityAPI = (identitas_id: string, data: any) => {
+export const updateIdentityAPI = (data: any) => {
   return request({
-    url: `/api/v1/identitas/${identitas_id}`,
+    url: `/api/v1/identitas/${data.identitas_id}`,
     method: "put",
     data
   });
 };
 
-export const deleteIdentityAPI = (identitas_id: string) => {
+export const deleteIdentityAPI = (params: any) => {
   return request({
-    url: `/api/v1/identitas/${identitas_id}`,
+    url: `/api/v1/identitas/${params.identitas_id}`,
     method: "delete",
+    params,
   });
 };

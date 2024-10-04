@@ -15,17 +15,18 @@ export const createDestinateAPI = (data: any) => {
   });
 };
 
-export const updateDestinateAPI = (destinate_id: string, data: any) => {
+export const updateDestinateAPI = (data: any) => {
   return request({
-    url: `/api/v1/destinate/${destinate_id}`,
+    url: `/api/v1/destinate/${data.destinate_id}`,
     method: "put",
     data,
   });
 };
 
-export const deleteDestinateAPI = (destinate_id: string) => {
+export const deleteDestinateAPI = (params: any) => {
   return request({
-    url: `/api/v1/destinate/${destinate_id}`,
+    url: `/api/v1/destinate/${params.destinate_id}`,
     method: "delete",
+    params,
   });
 };

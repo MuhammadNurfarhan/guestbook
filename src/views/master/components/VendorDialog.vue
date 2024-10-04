@@ -16,12 +16,11 @@ const dialogState = computed({
 })
 
 const dialogTitle = computed(() => {
-  return props.action.type === 'create' ? 'create' : 'update';
+  return props.action.type === 'create' ? 'Create' : 'Update';
 });
 
 const state = reactive({
   formData: {
-    vendor_id: '',
     vendor_name: '',
     vendor_desc: '',
   },
@@ -41,6 +40,18 @@ const handleSaveClick = () => {
     emit('close');
   });
 };
+
+onBeforeMount(() => {
+
+  if (props.action.type === 'update') {
+    state.formData = {...props.action.data };
+  } else if (props.action.type === 'create') {
+    state.formData = {
+      vendor_name: '',
+      vendor_desc: '',
+    };
+  }
+});
 
 </script>
 

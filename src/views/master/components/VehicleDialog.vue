@@ -1,67 +1,76 @@
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue';
+import { createVehicleAPI, updateVehicleAPI } from '@/api/master/masterVehicle';
 
-const props = defineProps<{
-  show: boolean;
-  editMode: boolean;
-  editedVehicle: Vehicle | null;
-}>();
-
-interface Vehicle {
-  vehicle_id: string;
-  vehicle_name: string;
-  vehicle_desc: string;
-}
-
-const localVehicle = ref<Vehicle>({
-  vehicle_id: '',
-  vehicle_name: '',
-  vehicle_desc: '',
+const props = defineProps({
+  showDialog: Boolean,
+  action: Object,
 });
 
-const dialogTitle = ref('Create Vehicle Type');
-const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits(['close']);
 
-watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Vehicle Type' : 'Create Vehicle Type';
+const dialogState = computed({
+  get: () => props.showDialog,
+  set: () => {
+    emit('close');
+  },
+})
+
+const dialogTitle = computed(() => {
+  return props.action.type === 'create' ? 'Create' : 'Update';
 });
 
-watch(() => props.editedVehicle, (newVehicle) => {
-  if (newVehicle) {
-    localVehicle.value = { ...newVehicle };
-  } else {
-    localVehicle.value = {
-      vehicle_id: '',
+const state = reactive({
+  formData: {
+    vehicle_id: '',
+    vehicle_name: '',
+    vehicle_desc: '',
+  },
+});
+
+const handleCancelClick = () => {
+  emit('close');
+};
+
+const handleSaveClick = () => {
+  const request =
+    props.action.type === "create"
+      ? createVehicleAPI
+      : updateVehicleAPI;
+
+  request(state.formData).then(() => {
+    emit('close');
+  });
+};
+
+onBeforeMount(() => {
+
+  if (props.action.type === 'update') {
+    state.formData = {...props.action.data };
+  } else if (props.action.type === 'create') {
+    state.formData = {
       vehicle_name: '',
       vehicle_desc: '',
     };
   }
 });
 
-const save = () => {
-  emit('save', localVehicle.value);
-};
-
-const cancel = () => {
-  emit('cancel');
-};
 </script>
 
 <template>
-  <v-dialog v-model="props.show" max-width="600px">
+  <v-dialog v-model="dialogState" max-width="600px">
     <v-card>
-      <v-card-title>{{ dialogTitle }}</v-card-title>
+      <v-card-title>{{ dialogTitle }} Vehicle</v-card-title>
       <v-divider />
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localVehicle.vehicle_name"
+            v-model="state.formData.vehicle_name"
             label="Vehicle Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localVehicle.vehicle_desc"
+            v-model="state.formData.vehicle_desc"
             label="Description"
             variant="outlined"
             rows="2"
@@ -70,9 +79,11 @@ const cancel = () => {
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn class="bg-primary" @click="save">Save</v-btn>
-        <v-btn class="bg-error" @click="cancel">Cancel</v-btn>
+        <v-btn class="bg-primary" @click="handleSaveClick">Save</v-btn>
+        <v-btn class="bg-error" @click="handleCancelClick">Cancel</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
+
+<style lang="scss"></style>

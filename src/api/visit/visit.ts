@@ -27,11 +27,11 @@ export const updateVisitAPI = (visit_id: string, data: any) => {
   });
 };
 
-export const deleteVisitAPI = (data: any) => {
+export const deleteVisitAPI = (params: any) => {
   return request({
-    url: "/api/v1/visit",
+    url: `/api/v1/visit/${params.visit_id}`,
     method: "delete",
-    data,
+    params,
   });
 }
 

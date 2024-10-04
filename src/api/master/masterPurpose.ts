@@ -15,17 +15,18 @@ export const createPurposeAPI = (data: any) => {
   });
 };
 
-export const updatePurposeAPI = (purpose_id: string, data: any) => {
+export const updatePurposeAPI = (data: any) => {
   return request({
-    url: `/api/v1/purpose/${purpose_id}`,
+    url: `/api/v1/purpose/${data.purpose_id}`,
     method: "put",
     data
   });
 };
 
-export const deletePurposeAPI = (purpose_id: string) => {
+export const deletePurposeAPI = (params: any) => {
   return request({
-    url: `/api/v1/purpose/${purpose_id}`,
+    url: `/api/v1/purpose/${params.purpose_id}`,
     method: "delete",
+    params,
   });
 };

@@ -1,67 +1,76 @@
 <script setup lang="ts">
-import { defineProps, ref, watch } from 'vue';
+import { createIdentityAPI, updateIdentityAPI } from '@/api/master/masterIdentity';
 
-const props = defineProps<{
-  show: boolean;
-  editMode: boolean;
-  editedIdentity: Identity | null;
-}>();
-
-interface Identity {
-  identitas_id: string;
-  identitas_name: string;
-  identitas_desc: string;
-}
-
-const localIdentity = ref<Identity>({
-  identitas_id: '',
-  identitas_name: '',
-  identitas_desc: '',
+const props = defineProps({
+  showDialog: Boolean,
+  action: Object,
 });
 
-const dialogTitle = ref('Create Identity');
-const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits(['close']);
 
-watch(() => props.editMode, (newVal) => {
-  dialogTitle.value = newVal ? 'Edit Identity' : 'Create Identity';
+const dialogState = computed({
+  get: () => props.showDialog,
+  set: () => {
+    emit('close');
+  },
+})
+
+const dialogTitle = computed(() => {
+  return props.action.type === 'create' ? 'Create' : 'Update';
 });
 
-watch(() => props.editedIdentity, (newIdentity) => {
-  if (newIdentity) {
-    localIdentity.value = { ...newIdentity };
-  } else {
-    localIdentity.value = {
-      identitas_id: '',
+const state = reactive({
+  formData: {
+    identitas_id: '',
+    identitas_name: '',
+    identitas_desc: '',
+  },
+});
+
+const handleCancelClick = () => {
+  emit('close');
+};
+
+const handleSaveClick = () => {
+  const request =
+    props.action.type === "create"
+      ? createIdentityAPI
+      : updateIdentityAPI;
+
+  request(state.formData).then(() => {
+    emit('close');
+  });
+};
+
+onBeforeMount(() => {
+
+  if (props.action.type === 'update') {
+    state.formData = {...props.action.data };
+  } else if (props.action.type === 'create') {
+    state.formData = {
       identitas_name: '',
       identitas_desc: '',
     };
   }
 });
 
-const save = () => {
-  emit('save', localIdentity.value);
-};
-
-const cancel = () => {
-  emit('cancel');
-};
 </script>
 
 <template>
-  <v-dialog v-model="props.show" max-width="600px">
+  <v-dialog v-model="dialogState" max-width="600px">
     <v-card>
-      <v-card-title>{{ dialogTitle }}</v-card-title>
+      <v-card-title>{{ dialogTitle }} Identity</v-card-title>
       <v-divider />
       <v-card-text>
         <v-form>
           <v-text-field
-            v-model="localIdentity.identitas_name"
+            v-model="state.formData.identitas_name"
             label="Identity Name"
             variant="outlined"
             required
           />
           <v-textarea
-            v-model="localIdentity.identitas_desc"
+            v-model="state.formData.identitas_desc"
             label="Description"
             variant="outlined"
             rows="2"
@@ -70,9 +79,11 @@ const cancel = () => {
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn class="bg-primary" @click="save">Save</v-btn>
-        <v-btn class="bg-error" @click="cancel">Cancel</v-btn>
+        <v-btn class="bg-primary" @click="handleSaveClick">Save</v-btn>
+        <v-btn class="bg-error" @click="handleCancelClick">Cancel</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
+
+<style lang="scss"></style>

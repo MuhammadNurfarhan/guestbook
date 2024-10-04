@@ -13,7 +13,6 @@ export default defineComponent({
     const fetchVisitorData = async () => {
       try {
         const res = await getVisitAPI(new Date());
-        console.log(res); // API endpoint
         const data = res.data;
 
         const dates = data.map((item: any) => item.check_in);

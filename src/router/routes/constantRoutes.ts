@@ -116,43 +116,6 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
     ],
   },
   {
-    path: "/",
-    component: internalLayout,
-    meta: {
-      title: "setting",
-      icon: "mdi-cog",
-    },
-    children: [
-      {
-        path: "setting",
-        name: "Setting Page",
-        component: () => import("@/views/setting/index.vue"),
-        meta: {
-          title: "user",
-          icon: "mdi-cog",
-        },
-      },
-    ],
-  },
-  {
-    path: "/login",
-    name: "Login",
-    component: () => import("@/views/auth/Login.vue"),
-    meta: {
-      public: true,
-      hidden: true,
-    },
-  },
-  {
-    path: "/register",
-    name: "Register",
-    component: () => import("@/views/auth/Register.vue"),
-    meta: {
-      public: true,
-      hidden: true,
-    },
-  },
-  {
     name: "404",
     path: "/404",
     component: () => import("@/views/404.vue"),

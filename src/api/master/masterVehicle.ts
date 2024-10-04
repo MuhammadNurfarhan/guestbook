@@ -15,17 +15,18 @@ export const createVehicleAPI = (data: any) => {
   });
 };
 
-export const updateVehicleAPI = (vehicle_id: string, data: any) => {
+export const updateVehicleAPI = (data: any) => {
   return request({
-    url: `/api/v1/vehicle/${vehicle_id}`,
+    url: `/api/v1/vehicle/${data.vehicle_id}`,
     method: "put",
     data,
   });
 };
 
-export const deleteVehicleAPI = (vehicle_id: string) => {
+export const deleteVehicleAPI = (params: any) => {
   return request({
-    url: `/api/v1/vehicle/${vehicle_id}`,
+    url: `/api/v1/vehicle/${params.vehicle_id}`,
     method: "delete",
+    params,
   });
 };
