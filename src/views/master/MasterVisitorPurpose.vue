@@ -42,7 +42,7 @@ const handleEditClick = (item: any) => {
 
 const handleDeleteClick = (item: any) => {
   ElMessageBox.confirm(
-    'Are you sure you want to delete this vendor?',
+    'Are you sure you want to delete this purpose?',
     'Delete Confirmation',
     {
       confirmButtonText: 'Yes',
