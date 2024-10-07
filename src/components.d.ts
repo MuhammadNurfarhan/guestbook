@@ -25,6 +25,7 @@ declare module 'vue' {
     VendorDialog: typeof import('./views/master/components/VendorDialog.vue')['default']
     VerticalHeader: typeof import('./layouts/internal/vertical-header/VerticalHeader.vue')['default']
     VerticalSidebar: typeof import('./layouts/internal/vertical-sidebar/VerticalSidebar.vue')['default']
+    VisitDialog: typeof import('./views/visit/components/VisitDialog.vue')['default']
     VisitorChart: typeof import('./components/charts/VisitorChart.vue')['default']
   }
   export interface ComponentCustomProperties {
