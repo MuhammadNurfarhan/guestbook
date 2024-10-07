@@ -10,7 +10,7 @@ import { useLoading } from '@/hooks';
 import { ElMessageBox, ElMessage } from 'element-plus';
 
 interface VisitorData {
-  visit_id: string;
+  visit_id: null | string;
   visit_name: string;
   visit_no: string;
   vehicle_name: string;
@@ -35,7 +35,7 @@ interface VisitorData {
 }
 
 const formData = ref<VisitorData>({
-  visit_id: '',
+  visit_id: null,
   visit_name: '',
   visit_no: '',
   vehicle_name: '',
@@ -198,11 +198,10 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   await fetchDropdownOptions();
-  await getVisitorData();
 });
 
-onBeforeMount(() => {
-  getVisitorData();
+onBeforeMount(async() => {
+  await getVisitorData();
 });
 </script>
 
