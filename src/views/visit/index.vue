@@ -10,6 +10,7 @@ import { useLoading } from '@/hooks';
 import { ElMessageBox, ElMessage } from 'element-plus';
 
 interface VisitorData {
+  visit_id: string;
   visit_name: string;
   visit_no: string;
   vehicle_name: string;
@@ -34,6 +35,7 @@ interface VisitorData {
 }
 
 const formData = ref<VisitorData>({
+  visit_id: '',
   visit_name: '',
   visit_no: '',
   vehicle_name: '',
@@ -125,7 +127,7 @@ const submitVisitorData = async (payload: VisitorData) => {
   try {
     let response;
     if (isEditing.value && formData.value) {
-      response = await updateVisitAPI(payload);
+      response = await updateVisitAPI(formData.value.visit_id, payload);
     } else {
       response = await createVisitAPI(payload);
     }
