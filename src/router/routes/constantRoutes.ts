@@ -27,7 +27,7 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
     component: internalLayout,
     meta: {
       title: "visit",
-      icon: "mdi-account",
+      icon: "mdi-account-group",
     },
     children: [
       {
@@ -36,7 +36,7 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
         component: () => import("@/views/visit/index.vue"),
         meta: {
           title: "visitor",
-          icon: "mdi-account",
+          icon: "mdi-account-group",
         },
       },
     ],
@@ -91,7 +91,7 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
         component: () => import("@/views/master/MasterVisitorPurpose.vue"),
         meta: {
           title: "purpose",
-          icon: "mdi-account-group",
+          icon: "mdi-home-city-outline",
         },
       }
     ],
@@ -114,6 +114,43 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
         },
       },
     ],
+  },
+  {
+    path: "/",
+    component: internalLayout,
+    meta: {
+      title: "setting",
+      icon: "mdi-cog",
+    },
+    children: [
+      {
+        path: "user",
+        name: "User Page",
+        component: () => import("@/views/user/index.vue"),
+        meta: {
+          title: "user",
+          icon: "mdi-account",
+        },
+      },
+    ],
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("@/views/auth/Login.vue"),
+    meta: {
+      public: true,
+      hidden: true,
+    },
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: () => import("@/views/auth/Register.vue"),
+    meta: {
+      public: true,
+      hidden: true,
+    },
   },
   {
     name: "404",

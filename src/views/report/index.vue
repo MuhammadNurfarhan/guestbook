@@ -2,51 +2,106 @@
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { ElMessage } from 'element-plus';
 
-const periods = ['Weekly', 'Monthly', 'Yearly'];
-const selectedPeriod = ref('Weekly');
-const selectedDate = ref('');
+// Period options
+const periods = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
+const selectedPeriod = ref('Daily');
+const selectedDate = ref<Date | null>(null); // The base date to calculate the period
 const reportData = ref<any[]>([]);
+
+// Table headers for displaying the report
 const tableHeaders = [
-  { title: 'Visitor ID', key: 'visitor_id', sortable: true },
+  { title: 'Visitor NO', key: 'visit_no', sortable: true },
   { title: 'Visitor Name', key: 'visitor_name', sortable: true },
   { title: 'Date', key: 'created_date', sortable: true },
   { title: 'Check-In Time', key: 'check_in', sortable: true },
   { title: 'Check-Out Time', key: 'check_out', sortable: true },
 ];
+
+// For calendar component and loading state
 const menu = ref(false);
 const isLoading = ref(false);
 const form = ref(null);
-const snackbar = ref({ show: false, message: '', color: 'success' });
 
+// Max date for date picker (today)
 const maxDate = computed(() => new Date().toISOString().substr(0, 10));
 
+// Function to calculate the start and end date based on the selected period
+const calculateDateRange = (period: string, baseDate: string) => {
+  const date = new Date(baseDate);
+
+  // Validate if date is valid
+  if (isNaN(date.getTime())) {
+    throw new Error('Invalid date format');
+  }
+
+  let startDate, endDate;
+
+  switch (period) {
+    case 'Daily':
+      startDate = new Date(date);
+      endDate = new Date(date);
+      break;
+    case 'Weekly':
+      startDate = new Date(date.setDate(date.getDate() - date.getDay())); // Start of the week (Sunday)
+      endDate = new Date(date.setDate(startDate.getDate() + 6)); // End of the week (Saturday)
+      break;
+    case 'Monthly':
+      startDate = new Date(date.getFullYear(), date.getMonth(), 1); // Start of the month
+      endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0); // End of the month
+      break;
+    case 'Yearly':
+      startDate = new Date(date.getFullYear(), 0, 1); // Start of the year
+      endDate = new Date(date.getFullYear(), 11, 31); // End of the year
+      break;
+  }
+
+  return { startDate, endDate };
+};
+
+// Function to fetch report data
 const fetchReportData = async () => {
+  // Validate the form
   if (!(form.value as any).validate()) return;
 
+  // Check if date is provided
+  if (!selectedDate.value) {
+    ElMessage.error('Please select a date');
+    return;
+  }
+
   isLoading.value = true;
+
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/visit`, {
-        params: {
-          period: selectedPeriod.value,
-          created_date: selectedDate.value,
-        }
-      }
-    );
+    // Calculate date range based on selected period and date
+    const { startDate, endDate } = calculateDateRange(selectedPeriod.value, selectedDate.value.toISOString());
+
+    // Format dates for API query
+    const formattedStartDate = startDate.toISOString().split('T')[0];
+    const formattedEndDate = endDate.toISOString().split('T')[0];
+
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/visit`, {
+      params: {
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
+      },
+    });
+
     reportData.value = response.data.data;
-    showSnackbar('Report generated successfully', 'success');
+    ElMessage.success('Report generated successfully');
   } catch (error) {
     console.error('Error fetching report data:', error);
-    showSnackbar('Failed to generate report. Please try again.', 'error');
+    ElMessage.error('Failed to generate report. Please try again.');
   } finally {
     isLoading.value = false;
   }
 };
 
+// Function to export data to Excel
 const exportToExcel = () => {
   if (!reportData.value.length) {
-    showSnackbar('No data to export', 'warning');
+    ElMessage.warning('No data to export');
     return;
   }
 
@@ -55,18 +110,15 @@ const exportToExcel = () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Visitor Report');
 
   XLSX.writeFile(workbook, `Visitor_Report_${selectedPeriod.value}_${selectedDate.value}.xlsx`);
-  showSnackbar('Report exported successfully', 'success');
+  ElMessage.success('Report exported successfully');
 };
 
+// Function to reset the form
 const resetForm = () => {
-  selectedPeriod.value = 'Weekly';
-  selectedDate.value = '';
+  selectedPeriod.value = 'Daily';
+  selectedDate.value = null;
   reportData.value = [];
   (form.value as any)?.reset();
-};
-
-const showSnackbar = (message: string, color: string) => {
-  snackbar.value = { show: true, message, color };
 };
 </script>
 
@@ -93,11 +145,12 @@ const showSnackbar = (message: string, color: string) => {
               <v-menu
                 v-model="menu"
                 :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
+                target="['bottom', 'start']"
                 min-width="auto"
               >
+                <template v-slot:activator="{ props }">
                   <v-text-field
+                    v-bind="props"
                     v-model="selectedDate"
                     label="Select Date"
                     prepend-icon="mdi-calendar"
@@ -105,6 +158,8 @@ const showSnackbar = (message: string, color: string) => {
                     :rules="[v => !!v || 'Date is required']"
                     required
                   ></v-text-field>
+                </template>
+
                 <v-date-picker
                   v-model="selectedDate"
                   @input="menu = false"
@@ -146,8 +201,5 @@ const showSnackbar = (message: string, color: string) => {
         </v-data-table>
       </v-card-text>
     </v-card>
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
-      {{ snackbar.message }}
-    </v-snackbar>
   </Parent-card>
 </template>

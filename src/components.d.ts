@@ -19,6 +19,8 @@ declare module 'vue' {
     PurposeDialog: typeof import('./views/master/components/PurposeDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SettingDialog: typeof import('./views/setting/components/SettingDialog.vue')['default']
+    UserDialog: typeof import('./views/user/components/UserDialog.vue')['default']
     VehicleChart: typeof import('./components/charts/VehicleChart.vue')['default']
     VehicleDialog: typeof import('./views/master/components/VehicleDialog.vue')['default']
     VendorChart: typeof import('./components/charts/VendorChart.vue')['default']
