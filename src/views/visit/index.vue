@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getVisitAPI, deleteVisitAPI, updateVisitAPI } from '@/api/visit/visit';
-import { useLoading } from '../../hooks';
+import { useLoading } from '@/hooks';
 import { ElMessageBox } from 'element-plus';
 
 const { loading, showLoading, hideLoading } = useLoading();

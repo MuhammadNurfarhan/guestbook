@@ -7,6 +7,9 @@ import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
+import { readFileSync } from 'fs';
+
+import mkcert from 'vite-plugin-mkcert'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -52,6 +55,7 @@ export default defineConfig({
         ],
       },
     }),
+    mkcert(),
   ],
   define: { 'process.env': {} },
   resolve: {
@@ -62,9 +66,19 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: 443,
     cors: true,
     open: true,
+    https: {
+      key: readFileSync('key.pem'),
+      cert: readFileSync('cert.pem'),
+    },
+    proxy: {
+      '/api': {
+        target: 'http://192.168.111.9:8080',
+        changeOrigin: true,
+      }
+    }
   },
   build: {
     target: 'es2015',
