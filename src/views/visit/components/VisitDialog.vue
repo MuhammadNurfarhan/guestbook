@@ -11,6 +11,8 @@ const props = defineProps({
   showDialog: Boolean,
   action: Object,
 });
+const emit = defineEmits(['close']);
+
 
 const { loading, showLoading, hideLoading } = useLoading();
 const webcamAvailable = ref<boolean>(false);
@@ -18,6 +20,7 @@ const webcamError = ref<string | null>(null);
 const video = ref<HTMLVideoElement | null>(null);
 const capturedImage = ref<string | null>(null);
 let stream: MediaStream | null = null;
+
 const state = reactive({
   formData: {
     'visit_name': '',
@@ -37,10 +40,10 @@ const state = reactive({
     'visit_id': null,
     'status': 'Check in',
     'img_url': '',
+    'email': ''
   },
 });
 
-const emit = defineEmits(['close']);
 const dropdownOptions = ref({
   vendors: [],
   vehicles: [],
@@ -58,6 +61,22 @@ const dialogState = computed({
 
 const dialogTitle = computed(() => {
   return props.action.type === 'create' ? 'Create' : 'Update';
+});
+
+const isFormValid = computed(() => {
+  // return state.formData.visit_name &&
+  //        state.formData.vehicle_id &&
+  //        state.formData.identitas_id &&
+  //        state.formData.destinate_id &&
+  //        state.formData.vendor_id &&
+  //        state.formData.purpose_id &&
+  //        state.formData.vehicle_no &&
+  //        state.formData.driver_name &&
+  //        state.formData.identitas_no &&
+  //        state.formData.destinate_pic &&
+  //        state.formData.email &&
+  //        capturedImage.value;
+  return state.formData && capturedImage.value;
 });
 
 const fetchDropdownOptions = async () => {
@@ -81,10 +100,32 @@ const handleCancelClick = () => {
   emit('close');
 };
 
+const convertDataURLToBlob  = (dataURL: string) => {
+  const byteString = atob(dataURL.split(',')[1]);
+  const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([ab], { type: mimeString });
+};
+
 const handleSaveClick = () => {
-  // Assign the captured image to the formData before saving
+
+  const formData = new FormData();
+
+  // Append the form data fields to FormData
+  Object.keys(state.formData).forEach(key => {
+    formData.append(key, (state.formData as any)[key]);
+  });
+
+  // Check if an image was captured and append it to FormData
   if (capturedImage.value) {
-    state.formData.img_url = capturedImage.value; // Assign the base64 image
+    const blob = convertDataURLToBlob(capturedImage.value);
+    formData.append('files', blob, 'visitor-photo.png');
   }
 
   const request =
@@ -92,9 +133,13 @@ const handleSaveClick = () => {
       ? createVisitAPI
       : updateVisitAPI;
 
-  request(state.formData).then(() => {
-    emit('close');
-  });
+  request(formData)
+    .then(() => {
+      emit('close');
+    })
+    .catch((error) => {
+      console.error('Error saving visit:', error);
+    });
 };
 
 // Start the webcam video stream
@@ -259,9 +304,9 @@ onBeforeMount(() => {
                 label="Vehicle Type"
                 variant="outlined"
               />
-              <v-text-field label="Police Number" v-model="state.formData.vehicle_no" variant="outlined" />
+              <v-text-field label="Police Number" v-model="state.formData.vehicle_no" variant="outlined" :maxlength="10" />
               <v-text-field label="Destination PIC" v-model="state.formData.destinate_pic" variant="outlined" />
-              <v-text-field label="Notes" v-model="state.formData.remarks" variant="outlined" />
+              <v-text-field label="Email" v-model="state.formData.email" variant="outlined" type="email" />
             </v-col>
 
             <v-col cols="4">
@@ -291,6 +336,7 @@ onBeforeMount(() => {
                 label="Visitor Purpose"
                 variant="outlined"
               />
+              <v-text-field label="Notes" v-model="state.formData.remarks" variant="outlined" />
             </v-col>
 
             <v-col cols="4" class="text-center">
@@ -370,7 +416,7 @@ onBeforeMount(() => {
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn class="bg-primary" @click="handleSaveClick">Save</v-btn>
+        <v-btn class="bg-primary" @click="handleSaveClick" :disabled="!isFormValid">Save</v-btn>
         <v-btn class="bg-error" @click="handleCancelClick">Cancel</v-btn>
       </v-card-actions>
     </v-card>

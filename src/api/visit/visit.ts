@@ -16,6 +16,9 @@ export const createVisitAPI = (data: any) => {
     url: "/api/v1/visit",
     method: "post",
     data,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    }
   });
 };
 
