@@ -88,7 +88,7 @@ onBeforeMount(() => {
         :items="state.tableData"
         class="elevation-1"
       >
-        <template v-slot:item.actions="{ item }">
+        <template v-slot:actions="{ item }">
           <v-icon color="primary" @click="handleEditClick(item)" class="mr-2">mdi-pencil</v-icon>
           <v-icon color="error" @click="handleDeleteClick(item)">mdi-delete</v-icon>
         </template>
