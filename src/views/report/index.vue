@@ -3,14 +3,17 @@ import { ref, computed } from 'vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ElMessage } from 'element-plus';
+import { useLoading } from '@/hooks';
 
 // Period options
 const periods = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
 const selectedPeriod = ref('Daily');
 const selectedDate = ref<Date | null>(null); // The base date to calculate the period
 const reportData = ref<any[]>([]);
+const menu = ref(false);
+const form = ref(null);
+const { loading, showLoading, hideLoading } = useLoading();
 
-// Table headers for displaying the report
 const tableHeaders = [
   { title: 'Visitor NO', key: 'visit_no', sortable: true },
   { title: 'Visitor Name', key: 'visitor_name', sortable: true },
@@ -18,11 +21,6 @@ const tableHeaders = [
   { title: 'Check-In Time', key: 'check_in', sortable: true },
   { title: 'Check-Out Time', key: 'check_out', sortable: true },
 ];
-
-// For calendar component and loading state
-const menu = ref(false);
-const isLoading = ref(false);
-const form = ref(null);
 
 // Max date for date picker (today)
 const maxDate = computed(() => new Date().toISOString().substr(0, 10));
@@ -61,7 +59,7 @@ const calculateDateRange = (period: string, baseDate: string) => {
 };
 
 // Function to fetch report data
-const fetchReportData = async () => {
+const getReport = async () => {
   // Validate the form
   if (!(form.value as any).validate()) return;
 
@@ -71,7 +69,7 @@ const fetchReportData = async () => {
     return;
   }
 
-  isLoading.value = true;
+  showLoading();
 
   try {
     // Calculate date range based on selected period and date
@@ -88,13 +86,13 @@ const fetchReportData = async () => {
       },
     });
 
-    reportData.value = response.data.data;
+    reportData.value = response.data;
     ElMessage.success('Report generated successfully');
   } catch (error) {
     console.error('Error fetching report data:', error);
     ElMessage.error('Failed to generate report. Please try again.');
   } finally {
-    isLoading.value = false;
+    hideLoading();
   }
 };
 
@@ -130,7 +128,7 @@ const resetForm = () => {
         <v-btn @click="resetForm" color="secondary" small>Reset</v-btn>
       </v-card-title>
       <v-card-text>
-        <v-form @submit.prevent="fetchReportData" ref="form">
+        <v-form @submit.prevent="getReport" ref="form">
           <v-row>
             <v-col cols="12" sm="4">
               <v-select
@@ -172,15 +170,15 @@ const resetForm = () => {
                 type="submit"
                 color="primary"
                 class="mr-4"
-                :loading="isLoading"
-                :disabled="isLoading"
+                :loading="loading"
+                :disabled="loading"
               >
                 Generate Report
               </v-btn>
               <v-btn
                 @click="exportToExcel"
                 color="success"
-                :disabled="!reportData.length || isLoading"
+                :disabled="!reportData.length || loading"
               >
                 Export to Excel
               </v-btn>
@@ -190,13 +188,8 @@ const resetForm = () => {
         <v-data-table
           :headers="tableHeaders"
           :items="reportData"
-          :loading="isLoading"
+          :loading="loading"
           class="mt-5"
-          :items-per-page="10"
-          :footer-props="{
-            'items-per-page-options': [10, 20, 50, 100, -1],
-            'items-per-page-text': 'Rows per page',
-          }"
         >
         </v-data-table>
       </v-card-text>

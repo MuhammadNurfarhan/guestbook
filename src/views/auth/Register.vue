@@ -3,26 +3,22 @@ import { ref } from 'vue';
 import { useAuthStore } from '@/stores/modules/authStore';
 import { useRouter } from 'vue-router';
 
-// State
+
 const valid = ref<boolean>(false);
 const name = ref<string>('');
 const email = ref<string>('');
 const password = ref<string>('');
-  const error = ref<string | null>(null);
+const error = ref<string | null>(null);
 
-// Validation rules
+const authStore = useAuthStore();
+const router = useRouter();
+
 const rules = {
   required: (value: string) => !!value || 'Required.',
   email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
   min: (v: number) => (value: string) => value.length >= v || `Min ${v} characters`,
 };
 
-// Store and Router
-const authStore = useAuthStore();
-const router = useRouter();
-
-
-// Methods
 const submitRegister = async () => {
   error.value = null;
   const response = await authStore.register(email.value, password.value ,name.value);

@@ -23,7 +23,11 @@ const state = reactive({
 const getDestinateList = () => {
   showLoading();
   getDestinateAPI().then((res) => {
-    state.tableData = res.data;
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };

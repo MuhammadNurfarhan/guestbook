@@ -13,11 +13,19 @@ export default defineComponent({
     const fetchVehicleData = async () => {
       try {
         const res = await getVehicleAPI();
-        const data = res.data;
+        const data = res?.data || [];
+
+        if (data.length === 0) {
+          console.warn('No vehicle data available');
+          // Optionally, clear the chart or show a message
+          if (chartInstance) {
+            chartInstance.clear();
+          }
+          return;
+        }
 
         const vehicleNames = data.map((item: any) => item.vehicle_name);
         const vehicleValues = data.map((item: any) => item.vehicle_desc.length);
-        // const vehicleValues = new Array(vehicleNames.length).fill(2);
 
         // Configure chart options for bar chart
         const chartOptions = {
@@ -63,6 +71,9 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Failed to fetch vehicle data:', error);
+        if (chartInstance) {
+          chartInstance.clear();
+        }
       }
     };
 

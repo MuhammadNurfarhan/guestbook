@@ -41,9 +41,9 @@ deploy:
     - ssh-keyscan -H 192.168.111.9 >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh administrator@192.168.111.9 'rm -rf /root/docker/nginx/nginx_html/dist-bak'
-    - ssh administrator@192.168.111.9 'mv /root/docker/nginx/nginx_html/dist /root/docker/nginx/nginx_html/dist-bak'
-    - scp -r dist administrator@192.168.111.9:/root/docker/nginx/nginx_html/
+    - ssh administrator@192.168.111.9 'rm -rf /var/www/guestbook/dist-bak'
+    - ssh administrator@192.168.111.9 'mv /var/www/guestbook/dist /var/www/guestbook/dist-bak'
+    - scp -r dist administrator@192.168.111.9:/var/www/guestbook/
   retry: 2
   only:
     - main

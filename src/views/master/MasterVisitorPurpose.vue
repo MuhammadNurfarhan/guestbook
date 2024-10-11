@@ -22,8 +22,12 @@ const state = reactive({
 
 const getPurposeList = () => {
   showLoading();
-  getPurposeAPI().then((res: any) => {
-    state.tableData = res.data;
+  getPurposeAPI().then((res) => {
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };

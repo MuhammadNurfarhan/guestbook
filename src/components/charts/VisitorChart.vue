@@ -13,10 +13,18 @@ export default defineComponent({
     const fetchVisitorData = async () => {
       try {
         const res = await getVisitAPI(new Date());
-        const data = res.data;
+        const data = res?.data || [];
 
-        const dates = data.map((item: any) => item.check_in);
-        const totalVisitors = data.map((item: any) => item.visitor_count);
+        if (data.length === 0) {
+          console.warn('No visitor data available');
+          if (chartInstance) {
+            chartInstance.clear();
+          }
+          return;
+        }
+
+        const dates = data.map((item: any) => item.check_in || 'Unknown Date');
+        const totalVisitors = data.map((item: any) => item.visitor_count || 0);
 
         // Configure chart options for line chart
         const chartOptions = {
@@ -52,6 +60,9 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Failed to fetch visitor data:', error);
+        if (chartInstance) {
+          chartInstance.clear();
+        }
       }
     };
 

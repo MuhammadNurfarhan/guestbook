@@ -23,7 +23,11 @@ const state = reactive({
 const getVendorList = () => {
   showLoading();
   getVendorAPI().then((res) => {
-    state.tableData = res.data;
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };

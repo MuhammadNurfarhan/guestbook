@@ -22,8 +22,12 @@ const state = reactive({
 
 const getVehicleList = () => {
   showLoading();
-  getVehicleAPI().then((res: any) => {
-    state.tableData = res.data;
+  getVehicleAPI().then((res) => {
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };

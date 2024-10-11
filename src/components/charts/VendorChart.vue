@@ -12,7 +12,15 @@ export default defineComponent({
     const fetchVendorData = async () => {
       try {
         const res = await getVendorAPI() // API endpoint
-        const data = res.data;
+        const data = res?.data || [];
+
+        if (data.length === 0) {
+          console.warn('No vendor data available');
+          if (chartInstance) {
+            chartInstance.clear();
+          }
+          return;
+        }
 
         const vendorNames = data.map((vendor: any) => vendor.vendor_name);
 
@@ -51,6 +59,9 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Failed to fetch vendor data:', error);
+        if (chartInstance) {
+          chartInstance.clear();
+        }
       }
     };
 

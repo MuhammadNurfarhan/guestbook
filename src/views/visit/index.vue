@@ -19,6 +19,7 @@ const tableHeaders = ref([
   { title: 'Destination PIC', key: 'destinate_pic', sortable: true },
   { title: 'Vendor Name', key: 'vendor_name', sortable: true },
   { title: 'Visitor Purpose', key: 'purpose_name', sortable: true },
+  { title: 'Email', key: 'email', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
   { title: 'Remarks', key: 'remarks', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
@@ -37,7 +38,11 @@ const state = reactive({
 const getVisitList = () => {
   showLoading();
   getVisitAPI(new Date()).then((res) => {
-    state.tableData = res.data;
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };

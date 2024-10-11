@@ -22,8 +22,12 @@ const state = reactive({
 
 const getIdentityList = () => {
   showLoading();
-  getIdentityAPI().then((res: any) => {
-    state.tableData = res.data;
+  getIdentityAPI().then((res) => {
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };
