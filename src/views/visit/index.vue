@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { getVisitAPI, deleteVisitAPI, updateVisitAPI } from '@/api/visit/visit';
+import QrScannerDialog from './components/QrScannerDialog.vue';
 import { useLoading } from '@/hooks';
 import { ElMessageBox } from 'element-plus';
 
 const { loading, showLoading, hideLoading } = useLoading();
 
-const tableHeaders = ref([
+const tableHeaders: any = [
   { title: 'Checkin', key: 'check_in', sortable: false },
   { title: 'Checkout', key: 'check_out', sortable: false },
   { title: 'Visit Number', key: 'visit_no', sortable: true },
@@ -23,12 +24,13 @@ const tableHeaders = ref([
   { title: 'Status', key: 'status', sortable: true },
   { title: 'Remarks', key: 'remarks', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
-]);
+];
 
 const state = reactive({
   tableData: [],
   search: '',
   showDialog: false,
+  showQRScanner: false,
   dialogAction: {
     type: "create",
     data: {},
@@ -96,6 +98,25 @@ const handleDialogClose = () => {
   getVisitList();
 };
 
+const handleScanQR = () => {
+  state.showQRScanner = true;
+};
+
+// QR code scanning result handler
+const handleQrCodeScan = (result: string) => {
+  const visitId = result;  // Assuming the scanned QR code contains the visit_id
+  const visitToCheckout = state.tableData.find(item => item.visit_id === visitId);
+  if (visitToCheckout) {
+    const visitToCheckout = { visit_id: visitId };
+    updateVisitAPI(visitToCheckout).then(() => {
+      getVisitList();
+    });
+    state.showQRScanner = false;
+  } else {
+    ElMessageBox.alert('Visit not found!');
+  }
+};
+
 onMounted(() => {
   getVisitList();
 });
@@ -110,7 +131,7 @@ onBeforeMount(() => {
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <v-row>
-          <v-col cols="8">
+          <v-col cols="7">
             <span class="text-h5">Visit List</span>
           </v-col>
           <v-col cols="3" class="text-right">
@@ -121,6 +142,11 @@ onBeforeMount(() => {
               Create
             </v-btn>
           </v-col>
+          <v-col cols="1">
+            <v-btn color="success" @click="handleScanQR" prepend-icon="mdi-qrcode">
+              Scan QR
+            </v-btn>
+          </v-col>
         </v-row>
       </v-card-title>
 
@@ -128,7 +154,6 @@ onBeforeMount(() => {
         :headers="tableHeaders"
         :items="state.tableData"
         :search="state.search"
-        :loading="loading"
         loading-text="Loading user data..."
         style="overflow-x: auto; white-space: nowrap"
       >
@@ -153,6 +178,13 @@ onBeforeMount(() => {
         </template>
       </v-data-table>
     </v-card>
+
+    <!-- Use the new QrScannerDialog component -->
+    <QrScannerDialog
+      :showQRScanner="state.showQRScanner"
+      @qrScanned="handleQrCodeScan"
+      @close="state.showQRScanner = false"
+    />
 
     <VisitDialog
       v-if="state.showDialog"

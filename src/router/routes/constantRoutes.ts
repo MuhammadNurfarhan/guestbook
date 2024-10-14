@@ -115,25 +115,25 @@ const constantRoutes: VueRouter.RouteRecordRaw[] = [
       },
     ],
   },
-  {
-    path: "/",
-    component: internalLayout,
-    meta: {
-      title: "setting",
-      icon: "mdi-cog",
-    },
-    children: [
-      {
-        path: "user",
-        name: "User Page",
-        component: () => import("@/views/user/index.vue"),
-        meta: {
-          title: "user",
-          icon: "mdi-account",
-        },
-      },
-    ],
-  },
+  // {
+  //   path: "/",
+  //   component: internalLayout,
+  //   meta: {
+  //     title: "setting",
+  //     icon: "mdi-cog",
+  //   },
+  //   children: [
+  //     {
+  //       path: "user",
+  //       name: "User Page",
+  //       component: () => import("@/views/user/index.vue"),
+  //       meta: {
+  //         title: "user",
+  //         icon: "mdi-account",
+  //       },
+  //     },
+  //   ],
+  // },
   {
     path: "/login",
     name: "Login",

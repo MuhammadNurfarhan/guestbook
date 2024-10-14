@@ -23,6 +23,7 @@
     "vue": "^3.4.29",
     "vue-qrcode-reader": "^5.5.8",
     "vue3-perfect-scrollbar": "^2.0.0",
+    "vue3-qrcode-reader": "^0.0.1",
     "vuetify": "^3.7.1",
     "xlsx": "^0.18.5"
   },

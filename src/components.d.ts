@@ -18,6 +18,7 @@ declare module 'vue' {
     NavItem: typeof import('./layouts/internal/vertical-sidebar/NavItem/NavItem.vue')['default']
     ParentCard: typeof import('./components/ParentCard.vue')['default']
     PurposeDialog: typeof import('./views/master/components/PurposeDialog.vue')['default']
+    QrScannerDialog: typeof import('./views/visit/components/QrScannerDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingDialog: typeof import('./views/setting/components/SettingDialog.vue')['default']
