@@ -98,7 +98,7 @@ onBeforeMount(() => {
         loading-text="Loading user data..."
         style="overflow-x: auto; white-space: nowrap"
       >
-        <template v-slot:status="{ item }">
+        <template v-slot:[`item.status`]="{ item }">
           <v-chip
             :color="item.status === 'Check in' ? 'success' : 'error'"
             text-color="white"
@@ -108,7 +108,7 @@ onBeforeMount(() => {
           </v-chip>
         </template>
 
-        <template v-slot:actions="{ item }">
+        <template v-slot:[`item.actions`]="{ item }">
             <td>
               <v-icon color="primary" @click="handleEditClick(item)" class="mr-2">mdi-pencil</v-icon>
               <v-icon color="error" @click="handleDeleteClick(item)" class="mr-2">mdi-delete</v-icon>
