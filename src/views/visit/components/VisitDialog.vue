@@ -281,30 +281,32 @@ onBeforeMount(() => {
         <v-form>
           <v-row>
             <v-col cols="4">
-              <v-text-field label="Visitor Name" v-model="state.formData.Visit_name" variant="outlined" />
+              <v-text-field label="Visitor Name" v-model="state.formData.Visit_name" variant="outlined" color="primary" />
               <v-select
                 v-model="state.formData.Vendor_id"
+                label="Vendor Name"
                 :items="dropdownOptions.vendors"
                 item-title="vendor_name"
                 item-value="vendor_id"
-                label="Vendor Name"
                 variant="outlined"
+                color="primary"
               />
               <v-select
                 v-model="state.formData.Vehicle_id"
+                label="Vehicle Type"
                 :items="dropdownOptions.vehicles"
                 item-title="vehicle_name"
                 item-value="vehicle_id"
-                label="Vehicle Type"
                 variant="outlined"
+                color="primary"
               />
-              <v-text-field label="Police Number" v-model="state.formData.Vehicle_no" variant="outlined" :maxlength="10" />
-              <v-text-field label="Destination PIC" v-model="state.formData.Destinate_pic" variant="outlined" />
-              <v-text-field label="Email" v-model="state.formData.Email" variant="outlined" type="email" />
+              <v-text-field label="Police Number" v-model="state.formData.Vehicle_no" variant="outlined" color="primary" :maxlength="10" />
+              <v-text-field label="Destination PIC" v-model="state.formData.Destinate_pic" variant="outlined" color="primary" />
+              <v-text-field label="Email" v-model="state.formData.Email" variant="outlined" type="email" color="primary" />
             </v-col>
 
             <v-col cols="4">
-              <v-text-field label="Driver Name" v-model="state.formData.Driver_name" variant="outlined" />
+              <v-text-field label="Driver Name" v-model="state.formData.Driver_name" variant="outlined" color="primary" />
               <v-select
                 v-model="state.formData.Identitas_id"
                 :items="dropdownOptions.idTypes"
@@ -312,8 +314,9 @@ onBeforeMount(() => {
                 item-value="identitas_id"
                 label="ID Type"
                 variant="outlined"
+                color="primary"
               />
-              <v-text-field label="ID Number" v-model="state.formData.Identitas_no" variant="outlined" type="number" />
+              <v-text-field label="ID Number" v-model="state.formData.Identitas_no" variant="outlined" type="number" color="primary" />
               <v-select
                 v-model="state.formData.Destinate_id"
                 :items="dropdownOptions.destinateBuildings"
@@ -321,6 +324,7 @@ onBeforeMount(() => {
                 item-value="destinate_id"
                 label="Destination Building"
                 variant="outlined"
+                color="primary"
               />
               <v-select
                 v-model="state.formData.Purpose_id"
@@ -329,8 +333,9 @@ onBeforeMount(() => {
                 item-value="purpose_id"
                 label="Visitor Purpose"
                 variant="outlined"
+                color="primary"
               />
-              <v-text-field label="Notes" v-model="state.formData.Remarks" variant="outlined" />
+              <v-text-field label="Notes" v-model="state.formData.Remarks" variant="outlined" color="primary" />
             </v-col>
 
             <v-col cols="4" class="text-center">

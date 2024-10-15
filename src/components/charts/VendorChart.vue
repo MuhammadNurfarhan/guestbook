@@ -82,9 +82,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div>
-    <div ref="chartRef" style="height: 400px;"></div>
-  </div>
+  <div ref="chartRef" style="height: 400px;"></div>
 </template>
 
 <style scoped>

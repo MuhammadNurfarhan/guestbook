@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ElMessage } from 'element-plus';
 import { useLoading } from '@/hooks';
+import { getVisitAPI } from '@/api/visit/visit';
 
 // Period options
 const periods = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
@@ -16,7 +16,7 @@ const { loading, showLoading, hideLoading } = useLoading();
 
 const tableHeaders = [
   { title: 'Visitor NO', key: 'visit_no', sortable: true },
-  { title: 'Visitor Name', key: 'visitor_name', sortable: true },
+  { title: 'Visitor Name', key: 'visit_name', sortable: true },
   { title: 'Date', key: 'created_date', sortable: true },
   { title: 'Check-In Time', key: 'check_in', sortable: true },
   { title: 'Check-Out Time', key: 'check_out', sortable: true },
@@ -59,41 +59,31 @@ const calculateDateRange = (period: string, baseDate: string) => {
 };
 
 // Function to fetch report data
-const getReport = async () => {
+const getReport = () => {
   // Validate the form
   if (!(form.value as any).validate()) return;
 
-  // Check if date is provided
-  if (!selectedDate.value) {
-    ElMessage.error('Please select a date');
-    return;
-  }
-
   showLoading();
+  // Calculate date range based on selected period and date
+  const { startDate, endDate } = calculateDateRange(selectedPeriod.value, selectedDate.value.toISOString());
 
-  try {
-    // Calculate date range based on selected period and date
-    const { startDate, endDate } = calculateDateRange(selectedPeriod.value, selectedDate.value.toISOString());
+  // Format dates for API query
+  const formattedStartDate = startDate.toISOString().split('T')[0];
+  const formattedEndDate = endDate.toISOString().split('T')[0];
 
-    // Format dates for API query
-    const formattedStartDate = startDate.toISOString().split('T')[0];
-    const formattedEndDate = endDate.toISOString().split('T')[0];
-
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/visit`, {
-      params: {
-        start_date: formattedStartDate,
-        end_date: formattedEndDate,
-      },
-    });
-
-    reportData.value = response.data;
-    ElMessage.success('Report generated successfully');
-  } catch (error) {
+  getVisitAPI({
+      start_date: formattedStartDate,
+      end_date: formattedEndDate,
+  }).then((res) => {
+    if (res.data) {
+      reportData.value = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
+    hideLoading();
     console.error('Error fetching report data:', error);
     ElMessage.error('Failed to generate report. Please try again.');
-  } finally {
-    hideLoading();
-  }
+  });
 };
 
 // Function to export data to Excel

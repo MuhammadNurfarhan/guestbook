@@ -2,7 +2,7 @@
 import { QrcodeStream } from 'vue3-qrcode-reader';
 
 // Emit an event to notify the parent component of the scan result
-const emit = defineEmits(['qrScanned', 'close', 'update:showQRScanner']);
+const emit = defineEmits(['qrScanned', 'close']);
 
 // Props to control visibility of the dialog
 const props = defineProps({
@@ -22,7 +22,7 @@ const onQrCodeScanned = (result: string) => {
   emit('qrScanned', result); // Emit the scanned result to parent
 };
 
-// Close dialog and emit close event
+
 const closeDialog = () => {
   emit('close');
 };
