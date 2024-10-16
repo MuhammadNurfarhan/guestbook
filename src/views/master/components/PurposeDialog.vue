@@ -66,6 +66,7 @@ onBeforeMount(() => {
             v-model="state.formData.purpose_name"
             label="Purpose Name"
             variant="outlined"
+            color="primary"
             required
           />
           <v-textarea
@@ -73,6 +74,7 @@ onBeforeMount(() => {
             label="Description"
             variant="outlined"
             rows="2"
+            color="primary"
             required
           />
         </v-form>

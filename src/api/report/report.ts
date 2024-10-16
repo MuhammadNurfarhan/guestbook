@@ -1,9 +1,12 @@
 import request from "@/utils/request";
 
-export const getReportAPI = (params: any) => {
+export const getVisitReportAPI = (fromDate: string, toDate: string) => {
   return request({
-    url: "/api/v1/report",
+    url: "/api/v1/visit/report",
     method: "get",
-    params,
+    params: {
+      From_date: fromDate,
+      To_date: toDate,
+    },
   });
 };

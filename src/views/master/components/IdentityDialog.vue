@@ -66,6 +66,7 @@ onBeforeMount(() => {
             v-model="state.formData.identitas_name"
             label="Identity Name"
             variant="outlined"
+            color="primary"
             required
           />
           <v-textarea
@@ -73,6 +74,7 @@ onBeforeMount(() => {
             label="Description"
             variant="outlined"
             rows="2"
+            color="primary"
             required
           />
         </v-form>

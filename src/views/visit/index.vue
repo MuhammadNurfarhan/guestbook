@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getVisitAPI, deleteVisitAPI, updateVisitAPI } from '@/api/visit/visit';
+import { getVisitAPI, updateVisitAPI } from '@/api/visit/visit';
 import QrScannerDialog from './components/QrScannerDialog.vue';
 import { useLoading } from '@/hooks';
 import { ElMessageBox } from 'element-plus';
@@ -78,21 +78,6 @@ const checkoutVisitor = (item: any) => {
   });
 };
 
-const handleDeleteClick = (item: any) => {
-  ElMessageBox.confirm(
-    'Are you sure you want to delete this visitor?',
-    'Delete Confirmation',
-    {
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'Cancel',
-      type: 'warning',
-  }).then(() => {
-    deleteVisitAPI(item).then(() => {
-      getVisitList();
-    });
-  });
-};
-
 const handleDialogClose = () => {
   state.showDialog = false;
   getVisitList();
@@ -135,7 +120,16 @@ onBeforeMount(() => {
             <span class="text-h5">Visit List</span>
           </v-col>
           <v-col cols="3" class="text-right">
-            <v-text-field v-model="state.search" label="Search" density="compact" variant="outlined" prepend-inner-icon="mdi-magnify" hide-details single-line />
+            <v-text-field
+              v-model="state.search"
+              label="Search"
+              color="primary"
+              density="compact"
+              variant="outlined"
+              prepend-inner-icon="mdi-magnify"
+              hide-details
+              single-line
+            />
           </v-col>
           <v-col cols="1">
             <v-btn color="primary" @click="handleCreateClick" prepend-icon="mdi-plus">
@@ -159,8 +153,9 @@ onBeforeMount(() => {
       >
         <template v-slot:[`item.status`]="{ item }">
           <v-chip
-            :color="item.status === 'Check in' ? 'success' : 'error'"
+            :color="item.status === 'Check in' ? 'primary' : 'success'"
             text-color="white"
+            variant="elevated"
             class="rounded-pill"
           >
             {{ item.status }}
@@ -170,7 +165,6 @@ onBeforeMount(() => {
         <template v-slot:[`item.actions`]="{ item }">
             <td>
               <v-icon color="primary" @click="handleEditClick(item)" class="mr-2">mdi-pencil</v-icon>
-              <v-icon color="error" @click="handleDeleteClick(item)" class="mr-2">mdi-delete</v-icon>
               <v-icon color="success" @click="checkoutVisitor(item)" v-if="item.status === 'Check in'">
                 mdi-check-circle
               </v-icon>
@@ -179,7 +173,6 @@ onBeforeMount(() => {
       </v-data-table>
     </v-card>
 
-    <!-- Use the new QrScannerDialog component -->
     <QrScannerDialog
       :showQRScanner="state.showQRScanner"
       @qrScanned="handleQrCodeScan"
