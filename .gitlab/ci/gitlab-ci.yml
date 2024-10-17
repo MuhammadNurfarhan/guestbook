@@ -13,14 +13,14 @@ test:lint:
   stage: test
   script:
     - npm install -g pnpm
-    - pnpm install
+    - pnpm install --no-frozen-lockfile
     - pnpm lint
 
 build:
   stage: build
   script:
     - npm install -g pnpm
-    - pnpm install
+    - pnpm install --no-frozen-lockfile
     - pnpm build
   artifacts:
     paths:
