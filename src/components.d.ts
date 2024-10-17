@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     ChildCard: typeof import('./components/ChildCard.vue')['default']
     DestinationDialog: typeof import('./views/master/components/DestinationDialog.vue')['default']
-    Example: typeof import('./views/visit/components/example.vue')['default']
     FooterPanel: typeof import('./layouts/internal/footer/FooterPanel.vue')['default']
     IdentityDialog: typeof import('./views/master/components/IdentityDialog.vue')['default']
     Internal: typeof import('./layouts/internal.vue')['default']
@@ -21,7 +20,6 @@ declare module 'vue' {
     QrScannerDialog: typeof import('./views/visit/components/QrScannerDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SettingDialog: typeof import('./views/setting/components/SettingDialog.vue')['default']
     UserDialog: typeof import('./views/user/components/UserDialog.vue')['default']
     VehicleChart: typeof import('./components/charts/VehicleChart.vue')['default']
     VehicleDialog: typeof import('./views/master/components/VehicleDialog.vue')['default']

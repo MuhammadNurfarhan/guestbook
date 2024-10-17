@@ -72,7 +72,6 @@ const getReport = async () => {
   }
 
   showLoading();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   try {
     const formattedFrom_date = new Date(state.From_date).toISOString().split('T')[0];
