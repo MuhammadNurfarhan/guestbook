@@ -6,8 +6,6 @@ import { getIdentityAPI } from '@/api/master/masterIdentity';
 import { getDestinateAPI } from '@/api/master/masterDestinate';
 import { getPurposeAPI } from '@/api/master/masterPurpose';
 import { useLoading } from '@/hooks';
-import { useVuelidate } from '@vuelidate/core';
-import { required, email, minLength, maxLength, helpers } from '@vuelidate/validators';
 
 const props = defineProps({
   showDialog: Boolean,
@@ -49,26 +47,8 @@ const state = reactive({
     "Check_in":"",
     "Check_out":"",
   },
+  valid: false,
 });
-
-// Validation rules using Vuelidate
-const rules = computed(() => ({
-  formData: {
-    Visit_name: { required: helpers.withMessage('Visit name is required', required) },
-    Vendor_id: { required: helpers.withMessage('Vendor is required', required) },
-    Vehicle_id: { required: helpers.withMessage('Vehicle is required', required) },
-    Vehicle_no: { required: helpers.withMessage('Vehicle number is required', required), maxLength: maxLength(10) },
-    Destinate_pic: { required: helpers.withMessage('Destination PIC is required', required) },
-    Email: { required: helpers.withMessage('Email is required', required), email: helpers.withMessage('Email must be valid', email) },
-    Identitas_id: { required: helpers.withMessage('ID type is required', required) },
-    Identitas_no: { required: helpers.withMessage('ID number is required', required), minLength: minLength(8) },
-    Destinate_id: { required: helpers.withMessage('Destination building is required', required) },
-    Purpose_id: { required: helpers.withMessage('Visitor purpose is required', required) },
-    Remarks: { required: helpers.withMessage('Remarks are required', required) }
-  }
-}));
-
-const v$ = useVuelidate(rules, state);
 
 const dropdownOptions = ref({
   vendors: [],
@@ -77,6 +57,39 @@ const dropdownOptions = ref({
   destinateBuildings: [],
   purposes: [],
 });
+
+const isFormValid = computed(() => {
+  return state.formData.Visit_name && state.formData.Vendor_id &&
+    state.formData.Destinate_id && state.formData.Vehicle_no &&
+    state.formData.Identitas_id && state.formData.Vehicle_id  &&
+    state.formData.Identitas_no && state.formData.Email &&
+    state.formData.Purpose_id && state.formData.Remarks;
+});
+
+
+const visitorNameRules = [
+  (v: string) => !!v || 'Visitor name is required',
+  (v: string) => v.length >= 3 || 'Visitor name must be at least 3 characters',
+];
+const vendorNameRules = [
+  (v: string) => !!v || 'Vendor name is required',
+  (v: string) => v.length >= 3 || 'Vendor name must be at least 3 characters',
+];
+const vehicleTypeRules = [ (v: string) => !!v || 'Vehicle type is required',];
+const policeNumberRules = [ (v: string) => !!v || 'Police number is required',];
+const destinatePicRules = [ (v: string) => !!v || 'Destination PIC is required',];
+const emailRules = [
+  (v: string) => !!v || 'Email is required',
+  (v: string) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(net|com|co|id)$/.test(v) || 'E-mail must be valid',
+];
+const identityTypeRules = [ (v: string) => !!v || 'Identity type is required',];
+const idNumberRules = [
+  (v: string) => !!v || 'ID number is required',
+  (v: string) => v.length >= 8 || 'ID number must be at least 8 digits',
+];
+const destinationBuildingRules = [ (v: string) => !!v || 'Destination building is required',];
+const purposeRules = [ (v: string) => !!v || 'Purpose is required',];
+const remarksRules = [(v: string) => !!v || 'Remarks is required',];
 
 const dialogState = computed({
   get: () => props.showDialog,
@@ -124,37 +137,32 @@ const convertDataURLToBlob  = (dataURL: string) => {
 };
 
 const handleSaveClick = () => {
-  v$.value.$touch(); // Trigger validation checks
-  if (!v$.value.$pending && v$.value.$invalid) {
-    console.log('Form is invalid!');
-    return;
-  }
+  if (state.valid) {
+    const formData = new FormData();
 
-  const formData = new FormData();
-
-  // Append the form data fields to FormData
-  Object.keys(state.formData).forEach(key => {
-    formData.append(key, (state.formData as any)[key]);
-  });
-
-  // Check if an image was captured and append it to FormData
-  if (capturedImage.value) {
-    const blob = convertDataURLToBlob(capturedImage.value);
-    formData.append('File', blob, 'visit-photo.png');
-  }
-
-  const request =
-    props.action.type === "create"
-      ? createVisitAPI
-      : updateVisitAPI;
-
-  request(formData)
-    .then(() => {
-      emit('close');
-    })
-    .catch((error) => {
-      console.error('Error saving visit:', error);
+    // Append the form data fields to FormData
+    Object.keys(state.formData).forEach(key => {
+      formData.append(key, (state.formData as any)[key]);
     });
+
+    // Check if an image was captured and append it to FormData
+    if (capturedImage.value) {
+      const blob = convertDataURLToBlob(capturedImage.value);
+      formData.append('File', blob, 'visit-photo.png');
+    }
+
+    const request = props.action.type === "create" ? createVisitAPI : updateVisitAPI;
+    request(formData)
+      .then(() => {
+        emit('close');
+      })
+      .catch((error: any) => {
+        console.error('Error saving visit:', error);
+      });
+
+  } else {
+    console.error('Form is not valid');
+  }
 };
 
 // Start the webcam video stream
@@ -296,7 +304,7 @@ onBeforeMount(() => {
       <v-card-title>{{ dialogTitle }} Visit</v-card-title>
       <v-divider />
       <v-card-text>
-        <v-form>
+        <v-form v-model="state.valid">
           <v-row>
             <v-col cols="4">
               <v-text-field
@@ -304,7 +312,8 @@ onBeforeMount(() => {
                 label="Visitor Name"
                 variant="outlined"
                 color="primary"
-                :error-messages="v$.formData.Visit_name.$errors.map(e => e.$message)"
+                :rules="visitorNameRules"
+                required
               />
               <v-select
                 v-model="state.formData.Vendor_id"
@@ -314,7 +323,8 @@ onBeforeMount(() => {
                 item-value="vendor_id"
                 variant="outlined"
                 color="primary"
-                :error-messages="v$.formData.Vendor_id.$errors.map(e => e.$message)"
+                :rules="vendorNameRules"
+                required
               />
               <v-select
                 v-model="state.formData.Vehicle_id"
@@ -324,15 +334,41 @@ onBeforeMount(() => {
                 item-value="vehicle_id"
                 variant="outlined"
                 color="primary"
-                :error-messages="v$.formData.Vehicle_id.$errors.map(error => error.$message)"
+                :rules="vehicleTypeRules"
+                required
               />
-              <v-text-field label="Police Number" v-model="state.formData.Vehicle_no" variant="outlined" color="primary" :error-messages="v$.formData.Vehicle_no.$errors.map(error => error.$message)" />
-              <v-text-field label="Destination PIC" v-model="state.formData.Destinate_pic" variant="outlined" color="primary" :error-messages="v$.formData.Destinate_pic.$errors.map(error => error.$message)" />
-              <v-text-field label="Email" v-model="state.formData.Email" variant="outlined" type="email" color="primary" :error-messages="v$.formData.Email.$errors.map(e => e.$message)" />
+              <v-text-field label="Police Number"
+                v-model="state.formData.Vehicle_no"
+                variant="outlined"
+                color="primary"
+                :rules="policeNumberRules"
+                required
+              />
+              <v-text-field
+                label="Destination PIC"
+                v-model="state.formData.Destinate_pic"
+                variant="outlined"
+                color="primary"
+                :rules="destinatePicRules"
+                required
+              />
+              <v-text-field
+                label="Email"
+                v-model="state.formData.Email"
+                variant="outlined"
+                type="email"
+                color="primary"
+                :rules="emailRules"
+                required
+              />
             </v-col>
-
             <v-col cols="4">
-              <v-text-field label="Driver Name" v-model="state.formData.Driver_name" variant="outlined" color="primary" />
+              <v-text-field
+                label="Driver Name"
+                v-model="state.formData.Driver_name"
+                variant="outlined"
+                color="primary"
+              />
               <v-select
                 v-model="state.formData.Identitas_id"
                 :items="dropdownOptions.idTypes"
@@ -341,9 +377,18 @@ onBeforeMount(() => {
                 label="ID Type"
                 variant="outlined"
                 color="primary"
-                :error-messages="v$.formData.Identitas_id.$errors.map(error => error.$message)"
+                :rules="identityTypeRules"
+                required
               />
-              <v-text-field label="ID Number" v-model="state.formData.Identitas_no" variant="outlined" type="number" color="primary" :error-messages="v$.formData.Identitas_no.$errors.map(error => error.$message)" />
+              <v-text-field
+                label="ID Number"
+                v-model="state.formData.Identitas_no"
+                variant="outlined"
+                type="number"
+                color="primary"
+                :rules="idNumberRules"
+                required
+              />
               <v-select
                 v-model="state.formData.Destinate_id"
                 :items="dropdownOptions.destinateBuildings"
@@ -352,7 +397,8 @@ onBeforeMount(() => {
                 label="Destination Building"
                 variant="outlined"
                 color="primary"
-                :error-messages="v$.formData.Destinate_id.$errors.map(error => error.$message)"
+                :rules="destinationBuildingRules"
+                required
               />
               <v-select
                 v-model="state.formData.Purpose_id"
@@ -362,9 +408,17 @@ onBeforeMount(() => {
                 label="Visitor Purpose"
                 variant="outlined"
                 color="primary"
-                :error-messages="v$.formData.Purpose_id.$errors.map(error => error.$message)"
+                :rules="purposeRules"
+                required
               />
-              <v-text-field label="Notes" v-model="state.formData.Remarks" variant="outlined" color="primary" :error-messages="v$.formData.Remarks.$errors.map(error => error.$message)" />
+              <v-text-field
+                label="Notes"
+                v-model="state.formData.Remarks"
+                variant="outlined"
+                color="primary"
+                :rules="remarksRules"
+                required
+              />
             </v-col>
 
             <v-col cols="4" class="text-center">
@@ -444,7 +498,7 @@ onBeforeMount(() => {
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn class="bg-primary" @click="handleSaveClick">Save</v-btn>
+        <v-btn class="bg-primary" @click="handleSaveClick" :disabled="!isFormValid">Save</v-btn>
         <v-btn class="bg-error" @click="handleCancelClick">Cancel</v-btn>
       </v-card-actions>
     </v-card>
