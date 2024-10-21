@@ -20,6 +20,7 @@ const tableHeaders: any = [
   { title: 'Destination PIC', key: 'destinate_pic', sortable: true },
   { title: 'Vendor Name', key: 'vendor_name', sortable: true },
   { title: 'Visitor Purpose', key: 'purpose_name', sortable: true },
+  { title: 'Visitor Count', key: 'visitor_count', sortable: true },
   { title: 'Email', key: 'email', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
   { title: 'Remarks', key: 'remarks', sortable: true },

@@ -42,7 +42,7 @@ const state = reactive({
     "visit_id":"",
     "Visit_name":"",
     "Visit_no":"",
-    "Visit_count":"",
+    "Visitor_count":"",
     "Email":"",
     "Check_in":"",
     "Check_out":"",
@@ -63,9 +63,9 @@ const isFormValid = computed(() => {
     state.formData.Destinate_id && state.formData.Vehicle_no &&
     state.formData.Identitas_id && state.formData.Vehicle_id  &&
     state.formData.Identitas_no && state.formData.Email &&
-    state.formData.Purpose_id && state.formData.Remarks;
+    state.formData.Purpose_id && state.formData.Visitor_count &&
+    state.formData.Remarks;
 });
-
 
 const visitorNameRules = [
   (v: string) => !!v || 'Visitor name is required',
@@ -89,6 +89,7 @@ const idNumberRules = [
 ];
 const destinationBuildingRules = [ (v: string) => !!v || 'Destination building is required',];
 const purposeRules = [ (v: string) => !!v || 'Purpose is required',];
+const visitorCountRules = [ (v: string) => !!v || 'Visitor count is required',];
 const remarksRules = [(v: string) => !!v || 'Remarks is required',];
 
 const dialogState = computed({
@@ -288,7 +289,7 @@ onBeforeMount(() => {
   stopWebcam();
 
   if (props.action.type === 'update') {
-    state.formData = {...props.action.data };
+    state.formData = { ...props.action.data };
   } else if (props.action.type === 'create') {
     state.formData = {
       ...state.formData,
@@ -409,6 +410,14 @@ onBeforeMount(() => {
                 variant="outlined"
                 color="primary"
                 :rules="purposeRules"
+                required
+              />
+              <v-text-field
+                label="Visitor Count"
+                v-model="state.formData.Visitor_count"
+                variant="outlined"
+                color="primary"
+                :rules="visitorCountRules"
                 required
               />
               <v-text-field
