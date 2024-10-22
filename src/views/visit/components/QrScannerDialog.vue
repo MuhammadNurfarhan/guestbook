@@ -36,7 +36,7 @@ const closeDialog = () => {
         <QrcodeStream @decode="onQrCodeScanned" />
       </v-card-text>
       <v-card-actions>
-        <v-btn color="primary" @click="closeDialog">Close</v-btn>
+        <v-btn class="bg-primary" @click="closeDialog">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

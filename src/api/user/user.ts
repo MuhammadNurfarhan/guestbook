@@ -1,10 +1,9 @@
 import request from "@/utils/request";
 
-export const getUserAPI = (params: any) => {
+export const getUserAPI = () => {
   return request({
     url: "/api/v1/user",
     method: "get",
-    params,
   });
 };
 

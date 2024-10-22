@@ -64,10 +64,6 @@ const handleDialogClose = () => {
   getVendorList();
 };
 
-onMounted(() => {
-  getVendorList();
-});
-
 onBeforeMount(() => {
   getVendorList();
 });

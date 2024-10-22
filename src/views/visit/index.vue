@@ -84,12 +84,17 @@ const handleDialogClose = () => {
   getVisitList();
 };
 
-const handleScanQR = () => {
+const handleOpenScanQR = () => {
   state.showQRScanner = true;
 };
 
+const handleScanQRClose = () => {
+  state.showQRScanner = false;
+  getVisitList();
+};
+
 // QR code scanning result handler
-const handleQrCodeScan = (result: string) => {
+const handleScanQR = (result: string) => {
   const visitId = result;  // Assuming the scanned QR code contains the visit_id
   const visitToCheckout = state.tableData.find(item => item.visit_id === visitId);
   if (visitToCheckout) {
@@ -138,7 +143,7 @@ onBeforeMount(() => {
             </v-btn>
           </v-col>
           <v-col cols="1">
-            <v-btn color="success" @click="handleScanQR" prepend-icon="mdi-qrcode">
+            <v-btn color="success" @click="handleOpenScanQR" prepend-icon="mdi-qrcode">
               Scan QR
             </v-btn>
           </v-col>
@@ -176,8 +181,8 @@ onBeforeMount(() => {
 
     <QrScannerDialog
       :showQRScanner="state.showQRScanner"
-      @qrScanned="handleQrCodeScan"
-      @close="state.showQRScanner = false"
+      @qrScanned="handleScanQR"
+      @close="handleScanQRClose"
     />
 
     <VisitDialog

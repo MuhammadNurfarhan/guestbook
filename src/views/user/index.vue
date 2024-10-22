@@ -5,12 +5,12 @@ import { ElMessageBox } from 'element-plus';
 
 const { loading, showLoading, hideLoading } = useLoading();
 
-const tableHeaders = ref([
+const tableHeaders: any = [
   { title: 'Name', key: 'name', sortable: true },
   { title: 'Email', key: 'email', sortable: true },
   { title: 'Role', key: 'role', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false },
-]);
+];
 
 const state = reactive({
   tableData: [],
@@ -24,8 +24,12 @@ const state = reactive({
 
 const getUserList = () => {
   showLoading();
-  getUserAPI(new Date()).then((res) => {
-    state.tableData = res.data;
+  getUserAPI().then((res) => {
+    if (res.data) {
+      state.tableData = res.data;
+    }
+    hideLoading();
+  }).catch(() => {
     hideLoading();
   });
 };
@@ -62,10 +66,6 @@ const handleDialogClose = () => {
   getUserList();
 };
 
-onMounted(() => {
-  getUserList();
-});
-
 onBeforeMount(() => {
   getUserList();
 });
@@ -94,20 +94,8 @@ onBeforeMount(() => {
         :headers="tableHeaders"
         :items="state.tableData"
         :search="state.search"
-        :loading="loading"
-        loading-text="Loading user data..."
-        style="overflow-x: auto; white-space: nowrap"
+        class="elevation-1"
       >
-        <template v-slot:[`item.status`]="{ item }">
-          <v-chip
-            :color="item.status === 'Check in' ? 'success' : 'error'"
-            text-color="white"
-            class="rounded-pill"
-          >
-            {{ item.status }}
-          </v-chip>
-        </template>
-
         <template v-slot:[`item.actions`]="{ item }">
             <td>
               <v-icon color="primary" @click="handleEditClick(item)" class="mr-2">mdi-pencil</v-icon>
