@@ -2,7 +2,7 @@
 import { getVisitAPI, updateVisitAPI } from '@/api/visit/visit';
 import QrScannerDialog from './components/QrScannerDialog.vue';
 import { useLoading } from '@/hooks';
-import { ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { loading, showLoading, hideLoading } = useLoading();
 
@@ -103,14 +103,11 @@ const handleScanQR = (result: string) => {
       getVisitList();
     });
     state.showQRScanner = false;
+    ElMessage.success('Visitor checked out successfully');
   } else {
     ElMessageBox.alert('Visit not found!');
   }
 };
-
-onMounted(() => {
-  getVisitList();
-});
 
 onBeforeMount(() => {
   getVisitList();

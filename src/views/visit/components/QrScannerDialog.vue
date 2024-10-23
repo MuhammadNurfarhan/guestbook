@@ -29,7 +29,7 @@ const closeDialog = () => {
 </script>
 
 <template>
-  <v-dialog v-model="showDialog" persistent width="500px">
+  <v-dialog v-model="showDialog" width="500px">
     <v-card>
       <v-card-title class="text-h5">Scan QR Code</v-card-title>
       <v-card-text>
